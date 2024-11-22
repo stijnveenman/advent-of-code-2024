@@ -67,6 +67,12 @@ mod test {
 
     #[rstest]
     #[case("4,-5" , ",", Point::new(4,-5))]
+    #[case("4 -5" , " ", Point::new(4,-5))]
+    #[case("4--5" , "-", Point::new(4,-5))]
+    #[case("-4,-5" , ",", Point::new(-4,-5))]
+    #[case("0,0", ",", Point::new(0, 0))]
+    #[case("1,1", ",", Point::new(1, 1))]
+    #[case("1---1", "---", Point::new(1, 1))]
     fn it_can_parse_sepearted(#[case] input: &str, #[case] seperator: &str, #[case] result: Point) {
         assert_eq!(Point::parse_seperated(input, seperator).unwrap(), result)
     }
