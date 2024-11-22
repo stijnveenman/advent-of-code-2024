@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign};
+use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub struct Point {
@@ -55,6 +55,35 @@ impl Add for Point {
         Point {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
+        }
+    }
+}
+
+impl Sub for Point {
+    type Output = Point;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Point {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
+}
+
+impl SubAssign for Point {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.x -= rhs.x;
+        self.y -= rhs.y;
+    }
+}
+
+impl Mul<isize> for Point {
+    type Output = Point;
+
+    fn mul(self, rhs: isize) -> Self::Output {
+        Point {
+            x: self.x * rhs,
+            y: self.y * rhs,
         }
     }
 }
