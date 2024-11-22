@@ -113,4 +113,16 @@ mod test {
     fn it_returns_an(#[case] input: &str, #[case] seperator: &str, #[case] result: String) {
         assert_eq!(Point::parse_seperated(input, seperator), Err(result.into()))
     }
+
+    #[rstest]
+    #[case(Point::new(1, 1), Point::new(2, 2), Point::new(3, 3))]
+    #[case(Point::new(-2, 1), Point::new(2, 2), Point::new(0, 3))]
+    #[case(Point::new(100, 10000), Point::new(0, 0), Point::new(100, 10000))]
+    #[case(Point::new(200, 10000), Point::new(200, 200), Point::new(400, 10200))]
+    fn it_can_add(#[case] mut input: Point, #[case] rhs: Point, #[case] result: Point) {
+        assert_eq!(input + rhs, result);
+        // Using add assign should also work
+        input += rhs;
+        assert_eq!(input, result);
+    }
 }
