@@ -29,8 +29,8 @@ impl Point {
         };
 
         Ok(Point {
-            x: x.parse::<isize>().map_err(|e| e.to_string())?,
-            y: y.parse::<isize>().map_err(|e| e.to_string())?,
+            x: x.parse::<isize>().map_err(|e| format!("{}: {}", x, e))?,
+            y: y.parse::<isize>().map_err(|e| format!("{}: {}", y, e))?,
         })
     }
 
@@ -79,6 +79,8 @@ mod test {
 
     #[rstest]
     #[case("4,-5", " ", "4,-5: seperator [ ] not found")]
+    #[case("4,-a5", ",", "-a5: invalid digit found in string")]
+    #[case("b4,-a5", ",", "b4: invalid digit found in string")]
     fn it_returns_an(#[case] input: &str, #[case] seperator: &str, #[case] result: String) {
         assert_eq!(Point::parse_seperated(input, seperator), Err(result.into()))
     }
