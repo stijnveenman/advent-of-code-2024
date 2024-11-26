@@ -21,6 +21,7 @@ impl Point {
     /// # Examples
     ///
     /// ```
+    /// use advent_of_code::Point;
     /// assert_eq!(Point::parse_seperated("4,-5", ",").unwrap(), Point::new(4, -5));
     /// ```
     pub fn parse_seperated(input: &str, seperator: &str) -> Result<Point, String> {
@@ -34,6 +35,16 @@ impl Point {
         })
     }
 
+    /// Check if a point falls within the square between a and b
+    ///
+    /// The order of a and b does not matter
+    ///
+    /// # Examples
+    /// ```
+    /// use advent_of_code::Point;
+    /// assert!(Point::new(1,1).is_within(&Point::new(0,0), &Point::new(3,3)));
+    /// assert!(Point::new(1,1).is_within(&Point::new(3,3), &Point::new(0,0)));
+    /// ```
     pub fn is_within(&self, a: &Point, b: &Point) -> bool {
         (self.x >= a.x && self.y >= a.y && self.x <= b.x && self.y <= b.y)
             || (self.x >= b.x && self.y >= b.y && self.x <= a.x && self.y <= a.y)
