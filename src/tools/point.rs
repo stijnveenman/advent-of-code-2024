@@ -34,10 +34,9 @@ impl Point {
         })
     }
 
-    // TODO test
-    pub fn is_within(&self, lower: &Point, upper: &Point) -> bool {
-        (self.x >= lower.x && self.y >= lower.y && self.x <= upper.x && self.y <= upper.y)
-            || (self.x >= upper.x && self.y >= upper.y && self.x <= lower.x && self.y <= lower.y)
+    pub fn is_within(&self, a: &Point, b: &Point) -> bool {
+        (self.x >= a.x && self.y >= a.y && self.x <= b.x && self.y <= b.y)
+            || (self.x >= b.x && self.y >= b.y && self.x <= a.x && self.y <= a.y)
     }
 }
 
@@ -124,5 +123,33 @@ mod test {
         // Using add assign should also work
         input += rhs;
         assert_eq!(input, result);
+    }
+
+    #[rstest]
+    #[case(Point::new(1, 1), Point::new(0, 0), Point::new(3, 3))]
+    #[case(Point::new(1, 0), Point::new(0, 0), Point::new(3, 3))]
+    #[case(Point::new(0, 1), Point::new(0, 0), Point::new(3, 3))]
+    #[case(Point::new(3, 1), Point::new(0, 0), Point::new(3, 3))]
+    #[case(Point::new(1, 3), Point::new(0, 0), Point::new(3, 3))]
+    #[case(Point::new(1, 1), Point::new(3, 3), Point::new(0, 0))]
+    #[case(Point::new(1, 0), Point::new(3, 3), Point::new(0, 0))]
+    #[case(Point::new(0, 1), Point::new(3, 3), Point::new(0, 0))]
+    #[case(Point::new(3, 1), Point::new(3, 3), Point::new(0, 0))]
+    #[case(Point::new(1, 3), Point::new(3, 3), Point::new(0, 0))]
+    #[case(Point::new(300, 300), Point::new(100, 100), Point::new(500, 500))]
+    #[case(Point::new(-300, -300), Point::new(-100, -100), Point::new(-500, -500))]
+    fn it_correctly_checks_if_within(#[case] input: Point, #[case] a: Point, #[case] b: Point) {
+        assert!(input.is_within(&a, &b));
+    }
+
+    #[rstest]
+    #[case(Point::new(-1, 0), Point::new(0, 0), Point::new(3, 3))]
+    #[case(Point::new(5, 0), Point::new(0, 0), Point::new(3, 3))]
+    #[case(Point::new(-3, -3), Point::new(0, 0), Point::new(3, 3))]
+    #[case(Point::new(3, 4), Point::new(0, 0), Point::new(3, 3))]
+    #[case(Point::new(0, 300), Point::new(100, 100), Point::new(500, 500))]
+    #[case(Point::new(-501, -300), Point::new(-100, -100), Point::new(-500, -500))]
+    fn it_correctly_checks_if_not_within(#[case] input: Point, #[case] a: Point, #[case] b: Point) {
+        assert!(!input.is_within(&a, &b));
     }
 }
