@@ -9,8 +9,8 @@ pub struct Point {
 impl Point {
     pub const RIGHT: Point = Point { x: 1, y: 0 };
     pub const LEFT: Point = Point { x: -1, y: 0 };
-    pub const DOWN: Point = Point { x: 0, y: 1 };
-    pub const UP: Point = Point { x: 0, y: -1 };
+    pub const DOWN: Point = Point { x: 0, y: -1 };
+    pub const UP: Point = Point { x: 0, y: 1 };
 
     pub fn new(x: isize, y: isize) -> Point {
         Point { x, y }
@@ -48,6 +48,27 @@ impl Point {
     pub fn is_within(&self, a: &Point, b: &Point) -> bool {
         (self.x >= a.x && self.y >= a.y && self.x <= b.x && self.y <= b.y)
             || (self.x >= b.x && self.y >= b.y && self.x <= a.x && self.y <= a.y)
+    }
+
+    /// Returns all neighbours directly horizontal and vertical of the point
+    ///
+    /// # Examples
+    /// ```
+    /// use advent_of_code::Point;
+    /// assert_eq!(Point::new(1,1).square_neighbours(), vec![
+    ///     Point::new(1,2),
+    ///     Point::new(2,1),
+    ///     Point::new(1,0),
+    ///     Point::new(0,1)
+    /// ]);
+    /// ```
+    pub fn square_neighbours(&self) -> Vec<Point> {
+        vec![
+            *self + Point::UP,
+            *self + Point::RIGHT,
+            *self + Point::DOWN,
+            *self + Point::LEFT,
+        ]
     }
 }
 
