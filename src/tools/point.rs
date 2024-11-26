@@ -70,6 +70,27 @@ impl Point {
             *self + Point::LEFT,
         ]
     }
+
+    /// Returns all neighbours on the corners of the current point
+    ///
+    /// # Examples
+    /// ```
+    /// use advent_of_code::Point;
+    /// assert_eq!(Point::new(1,1).diagonal_neighbours(), vec![
+    ///     Point::new(2,2),
+    ///     Point::new(0,2),
+    ///     Point::new(2,0),
+    ///     Point::new(0,0)
+    /// ]);
+    /// ```
+    pub fn diagonal_neighbours(&self) -> Vec<Point> {
+        vec![
+            *self + Point::UP + Point::RIGHT,
+            *self + Point::UP + Point::LEFT,
+            *self + Point::DOWN + Point::RIGHT,
+            *self + Point::DOWN + Point::LEFT,
+        ]
+    }
 }
 
 impl AddAssign<Point> for Point {
