@@ -1,4 +1,4 @@
-use std::usize;
+use std::{isize, usize};
 
 use crate::components::Point;
 
@@ -30,11 +30,19 @@ impl Grid for CharGrid {
     type Item = char;
 
     fn bounds(&self) -> (Point, Point) {
-        todo!()
+        let line_len = self.lines.first().map(|f| f.len()).unwrap();
+        let height = self.lines.len();
+
+        (
+            Point::new(0, 0),
+            Point::new(line_len as isize, height as isize),
+        )
     }
 
     fn in_bounds(&self, point: &Point) -> bool {
-        todo!()
+        let bounds = self.bounds();
+
+        point.is_within(&bounds.0, &bounds.1)
     }
 
     fn get(&self, point: &Point) -> Option<Self::Item> {
@@ -44,7 +52,20 @@ impl Grid for CharGrid {
     }
 
     fn set(&mut self, point: &Point, value: Self::Item) {
-        todo!()
+        let line = self.lines.get(usize::try_from(point.y).unwrap()).unwrap();
+        let line = line
+            .chars()
+            .enumerate()
+            .map(|(x, c)| {
+                if x as isize == point.x {
+                    return value;
+                }
+
+                c
+            })
+            .collect::<String>();
+
+        self.lines[usize::try_from(point.y).unwrap()] = line;
     }
 
     fn keys(&self) -> impl Iterator<Item = Point> {
