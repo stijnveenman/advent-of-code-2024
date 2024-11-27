@@ -91,6 +91,29 @@ impl Point {
             *self + Point::DOWN + Point::LEFT,
         ]
     }
+
+    /// Returns all neighbours, both square and diagonal of the current point
+    ///
+    /// # Examples
+    /// ```
+    /// use advent_of_code::Point;
+    /// assert_eq!(Point::new(1,1).neighbours(), vec![
+    ///     Point::new(1,2),
+    ///     Point::new(2,1),
+    ///     Point::new(1,0),
+    ///     Point::new(0,1),
+    ///     Point::new(2,2),
+    ///     Point::new(0,2),
+    ///     Point::new(2,0),
+    ///     Point::new(0,0)
+    /// ]);
+    /// ```
+    pub fn neighbours(&self) -> Vec<Point> {
+        let mut v = self.square_neighbours();
+        v.append(&mut self.diagonal_neighbours());
+
+        v
+    }
 }
 
 impl AddAssign<Point> for Point {
