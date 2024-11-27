@@ -21,7 +21,7 @@ impl Point {
     /// # Examples
     ///
     /// ```
-    /// use advent_of_code::Point;
+    /// use advent_of_code::components::Point;
     /// assert_eq!(Point::parse_seperated("4,-5", ",").unwrap(), Point::new(4, -5));
     /// ```
     pub fn parse_seperated(input: &str, seperator: &str) -> Result<Point, String> {
@@ -41,7 +41,7 @@ impl Point {
     ///
     /// # Examples
     /// ```
-    /// use advent_of_code::Point;
+    /// use advent_of_code::components::Point;
     /// assert!(Point::new(1,1).is_within(&Point::new(0,0), &Point::new(3,3)));
     /// assert!(Point::new(1,1).is_within(&Point::new(3,3), &Point::new(0,0)));
     /// ```
@@ -54,7 +54,7 @@ impl Point {
     ///
     /// # Examples
     /// ```
-    /// use advent_of_code::Point;
+    /// use advent_of_code::components::Point;
     /// assert_eq!(Point::new(1,1).square_neighbours(), vec![
     ///     Point::new(1,2),
     ///     Point::new(2,1),
@@ -75,7 +75,7 @@ impl Point {
     ///
     /// # Examples
     /// ```
-    /// use advent_of_code::Point;
+    /// use advent_of_code::components::Point;
     /// assert_eq!(Point::new(1,1).diagonal_neighbours(), vec![
     ///     Point::new(2,2),
     ///     Point::new(0,2),
@@ -96,7 +96,7 @@ impl Point {
     ///
     /// # Examples
     /// ```
-    /// use advent_of_code::Point;
+    /// use advent_of_code::components::Point;
     /// assert_eq!(Point::new(1,1).neighbours(), vec![
     ///     Point::new(1,2),
     ///     Point::new(2,1),
