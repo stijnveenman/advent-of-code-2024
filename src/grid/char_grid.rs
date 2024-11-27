@@ -1,3 +1,5 @@
+use std::usize;
+
 use crate::components::Point;
 
 use super::Grid;
@@ -36,7 +38,9 @@ impl Grid for CharGrid {
     }
 
     fn get(&self, point: &Point) -> Option<Self::Item> {
-        todo!()
+        self.lines
+            .get(usize::try_from(point.y).unwrap())
+            .and_then(|line| line.chars().nth(usize::try_from(point.x).unwrap()))
     }
 
     fn set(&mut self, point: &Point, value: Self::Item) {
