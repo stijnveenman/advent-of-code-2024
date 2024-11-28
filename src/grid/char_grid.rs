@@ -1,5 +1,3 @@
-use std::{isize, usize};
-
 use crate::components::Point;
 
 use super::Grid;
