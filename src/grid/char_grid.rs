@@ -1,7 +1,10 @@
+use std::fmt::Debug;
+
 use crate::components::Point;
 
 use super::Grid;
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct CharGrid {
     /// Each vertical line is an entry in the CharGrid
     /// Each horizontal line is a character in the line!()
@@ -13,14 +16,20 @@ impl CharGrid {
     /// Creates a new CharGrid from a Vec<String>
     /// returns None if the vec is empty
     /// returns None if any of the lines differs in length
-    pub fn new(lines: Vec<String>) -> Option<CharGrid> {
+    pub fn new(lines: Vec<&str>) -> Option<CharGrid> {
         let line_len = lines.first().map(|f| f.len())?;
+
+        if line_len == 0 {
+            return None;
+        }
 
         if lines.iter().any(|f| f.len() != line_len) {
             return None;
         }
 
-        Some(CharGrid { lines })
+        Some(CharGrid {
+            lines: lines.iter().map(|line| line.to_string()).collect(),
+        })
     }
 }
 
@@ -84,5 +93,26 @@ impl Grid for CharGrid {
                 .enumerate()
                 .map(move |(x, c)| (Point::new(x as isize, y as isize), c))
         })
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use rstest::rstest;
+
+    use super::*;
+
+    #[rstest]
+    fn new_should_return_none_when_empty() {
+        let lines = vec![];
+
+        assert_eq!(CharGrid::new(lines), None);
+    }
+
+    #[rstest]
+    fn new_should_return_none_when_empty_lines() {
+        let lines = vec![""];
+
+        assert_eq!(CharGrid::new(lines), None);
     }
 }
