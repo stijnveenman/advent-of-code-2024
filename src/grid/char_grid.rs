@@ -132,7 +132,7 @@ mod test {
             .lines()
             .collect();
 
-        let grid = CharGrid::new(input).unwrap();
+        let mut grid = CharGrid::new(input).unwrap();
 
         assert_eq!(grid.bounds(), (Point::new(0, 0), Point::new(4, 4)));
 
@@ -147,5 +147,13 @@ mod test {
         assert_eq!(grid.get(&Point::new(1, 0)), Some('.'));
         assert_eq!(grid.get(&Point::new(2, 2)), Some('|'));
         assert_eq!(grid.get(&Point::new(4, 4)), Some('|'));
+
+        assert_eq!(grid.get(&Point::new(1, 2)), Some('|'));
+        assert_eq!(grid.get(&Point::new(2, 2)), Some('|'));
+        assert_eq!(grid.get(&Point::new(3, 2)), Some('.'));
+        grid.set(&Point::new(2, 2), 'a');
+        assert_eq!(grid.get(&Point::new(1, 2)), Some('|'));
+        assert_eq!(grid.get(&Point::new(2, 2)), Some('a'));
+        assert_eq!(grid.get(&Point::new(3, 2)), Some('.'));
     }
 }
