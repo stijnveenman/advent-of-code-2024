@@ -1,12 +1,13 @@
 use std::fmt::Debug;
 
 use anyhow::{anyhow, Result};
+use itertools::Itertools;
 
 use crate::components::Point;
 
 use super::Grid;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(PartialEq, Eq)]
 pub struct CharGrid {
     /// Each vertical line is an entry in the CharGrid
     /// Each horizontal line is a character in the line!()
@@ -155,5 +156,27 @@ mod test {
         assert_eq!(grid.get(&Point::new(1, 2)), Some('|'));
         assert_eq!(grid.get(&Point::new(2, 2)), Some('a'));
         assert_eq!(grid.get(&Point::new(3, 2)), Some('.'));
+    }
+
+    #[rstest]
+    fn char_grid_can_debug() {
+        let input = "|...|
+||..|
+|||.|
+|||.|
+|||||";
+        let lines = input.lines().collect();
+
+        let grid = CharGrid::new(lines).unwrap();
+
+        let result = format!("{:?}", grid);
+
+        assert_eq!(input, result);
+    }
+}
+
+impl Debug for CharGrid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.lines.iter().join("\n"))
     }
 }
