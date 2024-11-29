@@ -37,7 +37,8 @@ impl CharGrid {
 }
 
 impl<'a> Grid<'a> for CharGrid {
-    type Item = char;
+    type ReturnItem = char;
+    type SetItem = char;
 
     fn bounds(&self) -> (Point, Point) {
         let line_len = self.lines.first().map(|f| f.len()).unwrap() - 1;
@@ -49,19 +50,13 @@ impl<'a> Grid<'a> for CharGrid {
         )
     }
 
-    fn in_bounds(&self, point: &Point) -> bool {
-        let bounds = self.bounds();
-
-        point.is_within(&bounds.0, &bounds.1)
-    }
-
-    fn get(&self, point: &Point) -> Option<Self::Item> {
+    fn get(&'a self, point: &Point) -> Option<Self::ReturnItem> {
         self.lines
             .get(usize::try_from(point.y).unwrap())
             .and_then(|line| line.chars().nth(usize::try_from(point.x).unwrap()))
     }
 
-    fn set(&mut self, point: &Point, value: Self::Item) {
+    fn set(&mut self, point: &Point, value: Self::SetItem) {
         let line = self.lines.get(usize::try_from(point.y).unwrap()).unwrap();
         let line = line
             .chars()
@@ -86,11 +81,11 @@ impl<'a> Grid<'a> for CharGrid {
         })
     }
 
-    fn values(&'a self) -> impl Iterator<Item = Self::Item> {
+    fn values(&'a self) -> impl Iterator<Item = Self::ReturnItem> {
         self.lines.iter().flat_map(|line| line.chars())
     }
 
-    fn entries(&'a self) -> impl Iterator<Item = (Point, Self::Item)> {
+    fn entries(&'a self) -> impl Iterator<Item = (Point, Self::ReturnItem)> {
         self.lines.iter().enumerate().flat_map(|(y, line)| {
             line.chars()
                 .enumerate()
