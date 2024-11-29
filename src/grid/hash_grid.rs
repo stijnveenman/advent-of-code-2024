@@ -117,4 +117,19 @@ mod test {
         grid.set(&Point::new(10, 10), ());
         assert_eq!(grid.bounds(), (Point::new(-5, -5), Point::new(10, 10)));
     }
+
+    #[rstest]
+    fn should_set_and_get() {
+        let mut grid = HashGrid::with_bounds(Point::new(-5, -5), Point::new(5, 5));
+
+        grid.set(&Point::new(5, 5), "hello");
+        assert_eq!(grid.get(&Point::new(5, 5)), Some(&"hello"));
+
+        grid.set(&Point::new(5, 5), "world");
+        assert_eq!(grid.get(&Point::new(5, 5)), Some(&"world"));
+
+        grid.set(&Point::new(4, 5), "foo");
+        assert_eq!(grid.get(&Point::new(5, 5)), Some(&"world"));
+        assert_eq!(grid.get(&Point::new(4, 5)), Some(&"foo"));
+    }
 }
