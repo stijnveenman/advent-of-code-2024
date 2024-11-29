@@ -43,8 +43,8 @@ impl Grid for CharGrid {
     type Item = char;
 
     fn bounds(&self) -> (Point, Point) {
-        let line_len = self.lines.first().map(|f| f.len()).unwrap();
-        let height = self.lines.len();
+        let line_len = self.lines.first().map(|f| f.len()).unwrap() - 1;
+        let height = self.lines.len() - 1;
 
         (
             Point::new(0, 0),
@@ -134,6 +134,18 @@ mod test {
 
         let grid = CharGrid::new(input).unwrap();
 
-        assert_eq!(grid.bounds(), (Point::new(0, 0), Point::new(5, 5)));
+        assert_eq!(grid.bounds(), (Point::new(0, 0), Point::new(4, 4)));
+
+        assert!(grid.in_bounds(&Point::new(3, 3)));
+        // A 5x5 grid starts at 0,0, so 5,5 itself it out of bounds
+        assert!(!grid.in_bounds(&Point::new(5, 5)));
+        assert!(!grid.in_bounds(&Point::new(6, 3)));
+
+        assert_eq!(grid.get(&Point::new(0, 0)), Some('|'));
+        assert_eq!(grid.get(&Point::new(0, 2)), Some('|'));
+        assert_eq!(grid.get(&Point::new(0, 6)), None);
+        assert_eq!(grid.get(&Point::new(1, 0)), Some('.'));
+        assert_eq!(grid.get(&Point::new(2, 2)), Some('|'));
+        assert_eq!(grid.get(&Point::new(4, 4)), Some('|'));
     }
 }
