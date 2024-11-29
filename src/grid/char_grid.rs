@@ -1,5 +1,7 @@
 use std::fmt::Debug;
 
+use anyhow::{anyhow, Result};
+
 use crate::components::Point;
 
 use super::Grid;
@@ -16,18 +18,22 @@ impl CharGrid {
     /// Creates a new CharGrid from a Vec<String>
     /// returns None if the vec is empty
     /// returns None if any of the lines differs in length
-    pub fn new(lines: Vec<&str>) -> Option<CharGrid> {
-        let line_len = lines.first().map(|f| f.len())?;
+    pub fn new(lines: Vec<&str>) -> Result<CharGrid> {
+        println!("{:?}", lines);
+        let line_len = lines
+            .first()
+            .map(|f| f.len())
+            .ok_or(anyhow!("empty vector"))?;
 
         if line_len == 0 {
-            return None;
+            return Err(anyhow!("line length cannot be empty"));
         }
 
         if lines.iter().any(|f| f.len() != line_len) {
-            return None;
+            return Err(anyhow!("all lines must be of equal width"));
         }
 
-        Some(CharGrid {
+        Ok(CharGrid {
             lines: lines.iter().map(|line| line.to_string()).collect(),
         })
     }
@@ -106,13 +112,28 @@ mod test {
     fn new_should_return_none_when_empty() {
         let lines = vec![];
 
-        assert_eq!(CharGrid::new(lines), None);
+        assert!(CharGrid::new(lines).is_err());
     }
 
     #[rstest]
     fn new_should_return_none_when_empty_lines() {
         let lines = vec![""];
 
-        assert_eq!(CharGrid::new(lines), None);
+        assert!(CharGrid::new(lines).is_err());
+    }
+
+    #[rstest]
+    fn basic_chargrid_happy_flow() {
+        let input = "|...|
+||..|
+|||.|
+|||.|
+|||||"
+            .lines()
+            .collect();
+
+        let grid = CharGrid::new(input).unwrap();
+
+        assert_eq!(grid.bounds(), (Point::new(0, 0), Point::new(5, 5)));
     }
 }
