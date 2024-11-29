@@ -1,4 +1,7 @@
-use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
+use std::{
+    fmt::Display,
+    ops::{Add, AddAssign, Mul, Sub, SubAssign},
+};
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy)]
 pub struct Point {
@@ -160,6 +163,12 @@ impl Mul<isize> for Point {
             x: self.x * rhs,
             y: self.y * rhs,
         }
+    }
+}
+
+impl Display for Point {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{},{}", self.x, self.y)
     }
 }
 
