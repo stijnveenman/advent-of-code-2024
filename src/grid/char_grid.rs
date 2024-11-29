@@ -9,18 +9,16 @@ use super::Grid;
 
 #[derive(PartialEq, Eq)]
 pub struct CharGrid {
-    /// Each vertical line is an entry in the CharGrid
-    /// Each horizontal line is a character in the line!()
-    /// Each line must be of equal width
     lines: Vec<String>,
 }
 
 impl CharGrid {
-    /// Creates a new CharGrid from a Vec<String>
-    /// returns None if the vec is empty
-    /// returns None if any of the lines differs in length
-    pub fn new(lines: Vec<&str>) -> Result<CharGrid> {
-        println!("{:?}", lines);
+    /// Creates a new CharGrid from a string, splitting and trimming the lines
+    /// Errors if the input is empty
+    /// Errors if any of the lines differs in length
+    pub fn new(input: &str) -> Result<CharGrid> {
+        let lines: Vec<String> = input.lines().map(|line| line.trim().to_string()).collect();
+
         let line_len = lines
             .first()
             .map(|f| f.len())
@@ -34,9 +32,7 @@ impl CharGrid {
             return Err(anyhow!("all lines must be of equal width"));
         }
 
-        Ok(CharGrid {
-            lines: lines.iter().map(|line| line.to_string()).collect(),
-        })
+        Ok(CharGrid { lines })
     }
 }
 
@@ -111,16 +107,20 @@ mod test {
 
     #[rstest]
     fn new_should_return_none_when_empty() {
-        let lines = vec![];
+        let input = "";
 
-        assert!(CharGrid::new(lines).is_err());
+        assert!(CharGrid::new(input).is_err());
     }
 
     #[rstest]
-    fn new_should_return_none_when_empty_lines() {
-        let lines = vec![""];
+    fn new_should_fail_when_lines_are_not_equal_len() {
+        let input = "|...|
+||..|
+|||
+|||.|
+|||||";
 
-        assert!(CharGrid::new(lines).is_err());
+        assert!(CharGrid::new(input).is_err());
     }
 
     #[rstest]
@@ -129,9 +129,7 @@ mod test {
 ||..|
 |||.|
 |||.|
-|||||"
-            .lines()
-            .collect();
+|||||";
 
         let mut grid = CharGrid::new(input).unwrap();
 
@@ -165,9 +163,8 @@ mod test {
 |||.|
 |||.|
 |||||";
-        let lines = input.lines().collect();
 
-        let grid = CharGrid::new(lines).unwrap();
+        let grid = CharGrid::new(input).unwrap();
 
         let result = format!("{:?}", grid);
 
