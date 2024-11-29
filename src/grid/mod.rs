@@ -1,8 +1,9 @@
 pub mod char_grid;
+pub mod hash_grid;
 
 use crate::components::Point;
 
-pub trait Grid {
+pub trait Grid<'a> {
     /// The type of Items stored within the grid.
     type Item;
 
@@ -21,7 +22,7 @@ pub trait Grid {
     /// cover the full bounds of the grid
     fn keys(&self) -> impl Iterator<Item = Point>;
     /// Returns all values stored in the grid
-    fn values(&self) -> impl Iterator<Item = Self::Item>;
+    fn values(&'a self) -> impl Iterator<Item = Self::Item>;
     /// Returns a tuple of the point and value for the entire grid
-    fn entries(&self) -> impl Iterator<Item = (Point, Self::Item)>;
+    fn entries(&'a self) -> impl Iterator<Item = (Point, Self::Item)>;
 }

@@ -36,7 +36,7 @@ impl CharGrid {
     }
 }
 
-impl Grid for CharGrid {
+impl<'a> Grid<'a> for CharGrid {
     type Item = char;
 
     fn bounds(&self) -> (Point, Point) {
@@ -86,11 +86,11 @@ impl Grid for CharGrid {
         })
     }
 
-    fn values(&self) -> impl Iterator<Item = Self::Item> {
+    fn values(&'a self) -> impl Iterator<Item = Self::Item> {
         self.lines.iter().flat_map(|line| line.chars())
     }
 
-    fn entries(&self) -> impl Iterator<Item = (Point, Self::Item)> {
+    fn entries(&'a self) -> impl Iterator<Item = (Point, Self::Item)> {
         self.lines.iter().enumerate().flat_map(|(y, line)| {
             line.chars()
                 .enumerate()
