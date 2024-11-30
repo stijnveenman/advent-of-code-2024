@@ -13,7 +13,10 @@ impl PartialOrd for PointWithDistance {
 
 impl Ord for PointWithDistance {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.0.cmp(&other.0)
+        match self.0.cmp(&other.0) {
+            std::cmp::Ordering::Equal => std::cmp::Ordering::Less,
+            other => other,
+        }
     }
 }
 
@@ -44,7 +47,7 @@ pub fn dijkstra<'a, T: Grid<'a>, CostFn: Fn(&Point, Option<T::ReturnItem>) -> Op
     let mut open = BTreeSet::from([PointWithDistance(0, start)]);
 
     // 2
-    while let Some(PointWithDistance(distance, current)) = open.pop_last() {
+    while let Some(PointWithDistance(distance, current)) = open.pop_first() {
         // 3
         if closed
             .get(&current)
@@ -109,5 +112,45 @@ mod test {
         );
 
         assert_eq!(result, Some(8));
+    }
+
+    #[rstest]
+    fn should_work_on_a_eomplex_maze() {
+        let input = "
+...###########################
+.........#.....#..#..#..#.....
+####..####..####..#..#..####..
+#...........#..#..#..#........
+#######..#..#..#..#..#..######
+#..#.....#.....#..#.....#.....
+#..#######..#..#..#..#######..
+#........#..#..#..#........#..
+#..#..#..####..#..#..#######..
+#..#..#.....#..#........#.....
+####..#######..#..####..#..###
+#..#.....#...........#........
+#..#..####..####..#######..###
+#..#..#..#..#..#.....#..#.....
+#..#..#..#..#..####..#..######
+#........#..#.....#...........
+#..#..####..####..#######..###
+#..#....................#.....
+#..#############..####..####..
+#.....#..............#..#.....
+";
+        let grid = CharGrid::new(input).unwrap();
+
+        let result = dijkstra(
+            &grid,
+            Point::new(0, 0),
+            grid.bounds().1,
+            |_point, char| match char {
+                None => None,
+                Some('.') => Some(1),
+                Some(_) => None,
+            },
+        );
+
+        assert_eq!(result, Some(48));
     }
 }
