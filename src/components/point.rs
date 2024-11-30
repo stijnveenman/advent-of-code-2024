@@ -58,14 +58,14 @@ impl Point {
     /// # Examples
     /// ```
     /// use advent_of_code::components::Point;
-    /// assert_eq!(Point::new(1,1).square_neighbours(), vec![
+    /// assert_eq!(Point::new(1,1).neighbours(), vec![
     ///     Point::new(1,2),
     ///     Point::new(2,1),
     ///     Point::new(1,0),
     ///     Point::new(0,1)
     /// ]);
     /// ```
-    pub fn square_neighbours(&self) -> Vec<Point> {
+    pub fn neighbours(&self) -> Vec<Point> {
         vec![
             *self + Point::UP,
             *self + Point::RIGHT,
@@ -100,7 +100,7 @@ impl Point {
     /// # Examples
     /// ```
     /// use advent_of_code::components::Point;
-    /// assert_eq!(Point::new(1,1).neighbours(), vec![
+    /// assert_eq!(Point::new(1,1).full_neighbours(), vec![
     ///     Point::new(1,2),
     ///     Point::new(2,1),
     ///     Point::new(1,0),
@@ -111,8 +111,8 @@ impl Point {
     ///     Point::new(0,0)
     /// ]);
     /// ```
-    pub fn neighbours(&self) -> Vec<Point> {
-        let mut v = self.square_neighbours();
+    pub fn full_neighbours(&self) -> Vec<Point> {
+        let mut v = self.neighbours();
         v.append(&mut self.diagonal_neighbours());
 
         v
