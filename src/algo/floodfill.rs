@@ -2,6 +2,10 @@ use std::collections::HashSet;
 
 use crate::{components::Point, grid::Grid};
 
+/// Floodfils a `Grid<T>` starting from the `Point` specified. `check_fn` is a function passed a
+/// `Point` and value `T`, and returns wether the point can be visited.
+/// Only direct neighbours of each point are visited, diagonal points are not visited so that it
+/// it can't skip over diagonal walls.
 pub fn floodfill<'a, T: Grid<'a>, F: Fn(&Point, Option<T::ReturnItem>) -> bool>(
     grid: &'a T,
     start: Point,
