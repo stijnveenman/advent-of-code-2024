@@ -54,4 +54,77 @@ mod test {
             HashSet::from([Point::new(1, 1), Point::new(2, 1), Point::new(3, 1)])
         )
     }
+
+    #[rstest]
+    fn should_go_around_corners_but_not_diagonal() {
+        let input = "
+-----
+-   -
+--- -
+-   -
+- ---
+- ---
+-- --
+";
+        let grid = CharGrid::new(input).unwrap();
+
+        let result = floodfill(&grid, Point::new(1, 1), |_point, char| match char {
+            None => true,
+            Some('-') => false,
+            Some(' ') => true,
+            Some(_) => false,
+        });
+
+        assert_eq!(
+            result,
+            HashSet::from([
+                Point::new(1, 1),
+                Point::new(2, 1),
+                Point::new(3, 1),
+                Point::new(3, 2),
+                Point::new(3, 3),
+                Point::new(2, 3),
+                Point::new(1, 3),
+                Point::new(1, 4),
+                Point::new(1, 5),
+            ])
+        )
+    }
+
+    #[rstest]
+    fn should_work_in_open_spaces() {
+        let input = "
+-----
+-   -
+-   -
+-   -
+-   -
+";
+        let grid = CharGrid::new(input).unwrap();
+
+        let result = floodfill(&grid, Point::new(1, 1), |_point, char| match char {
+            None => true,
+            Some('-') => false,
+            Some(' ') => true,
+            Some(_) => false,
+        });
+
+        assert_eq!(
+            result,
+            HashSet::from([
+                Point::new(1, 1),
+                Point::new(2, 1),
+                Point::new(3, 1),
+                Point::new(1, 2),
+                Point::new(2, 2),
+                Point::new(3, 2),
+                Point::new(1, 3),
+                Point::new(2, 3),
+                Point::new(3, 3),
+                Point::new(1, 4),
+                Point::new(2, 4),
+                Point::new(3, 4),
+            ])
+        )
+    }
 }
