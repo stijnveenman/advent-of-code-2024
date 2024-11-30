@@ -14,6 +14,10 @@ impl PartialOrd for PointWithDistance {
 impl Ord for PointWithDistance {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         match self.0.cmp(&other.0) {
+            // Returning equal will have the BTreeSet assume they are equal
+            // We don't care which distance comes first if the distance is Equal
+            // So pick a random point by returning less. unless the points are actually equal
+            std::cmp::Ordering::Equal if self.1 == other.1 => std::cmp::Ordering::Equal,
             std::cmp::Ordering::Equal => std::cmp::Ordering::Less,
             other => other,
         }
