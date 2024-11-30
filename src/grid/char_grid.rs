@@ -17,7 +17,11 @@ impl CharGrid {
     /// Errors if the input is empty
     /// Errors if any of the lines differs in length
     pub fn new(input: &str) -> Result<CharGrid> {
-        let lines: Vec<String> = input.lines().map(|line| line.trim().to_string()).collect();
+        let lines: Vec<String> = input
+            .trim()
+            .lines()
+            .map(|line| line.trim().to_string())
+            .collect();
 
         let line_len = lines
             .first()
@@ -116,6 +120,21 @@ mod test {
 |||||";
 
         assert!(CharGrid::new(input).is_err());
+    }
+
+    #[rstest]
+    fn should_trim_correctly() {
+        let input = "  |...|
+||..|
+|||.|
+|||.|
+|||||
+
+";
+
+        let grid = CharGrid::new(input).unwrap();
+
+        assert_eq!(grid.bounds(), (Point::new(0, 0), Point::new(4, 4)));
     }
 
     #[rstest]
