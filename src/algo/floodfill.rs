@@ -20,8 +20,8 @@ pub fn floodfill<'a, T: Grid<'a>, F: Fn(&Point, Option<T::ReturnItem>) -> bool>(
         let next = current
             .neighbours()
             .into_iter()
-            .filter(|point| !visited.contains(point))
             .filter(|point| grid.in_bounds(point))
+            .filter(|point| !visited.contains(point))
             .filter(|point| check_fn(point, grid.get(point)));
 
         remaining.extend(next);
