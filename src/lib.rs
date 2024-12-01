@@ -4,3 +4,5 @@ pub mod template;
 pub mod algo;
 pub mod components;
 pub mod grid;
+mod iter;
+pub use iter::AocItertools;
