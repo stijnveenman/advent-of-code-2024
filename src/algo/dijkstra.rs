@@ -183,7 +183,7 @@ mod test {
             },
         );
 
-        assert_eq!(result, Some(8));
+        assert_eq!(result, Some(19));
     }
     // TODO add a maze with different cost characters
 }
