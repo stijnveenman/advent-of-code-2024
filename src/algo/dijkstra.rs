@@ -157,4 +157,33 @@ mod test {
 
         assert_eq!(result, Some(48));
     }
+
+    #[rstest]
+    fn should_allow_for_different_costs() {
+        let input = "
+11111
+----1
+11111
+1---9
+1---9
+1---9
+1---9
+11111
+";
+        let grid = CharGrid::new(input).unwrap();
+
+        let result = dijkstra(
+            &grid,
+            Point::new(0, 0),
+            grid.bounds().1,
+            |_point, char| match char {
+                None => None,
+                Some('-') => None,
+                Some(c) => c.to_digit(10).map(|digit| digit as usize),
+            },
+        );
+
+        assert_eq!(result, Some(8));
+    }
+    // TODO add a maze with different cost characters
 }
