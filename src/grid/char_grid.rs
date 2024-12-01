@@ -1,6 +1,5 @@
 use std::fmt::Debug;
 
-use anyhow::{anyhow, Result};
 use itertools::Itertools;
 
 use crate::components::Point;
@@ -14,9 +13,9 @@ pub struct CharGrid {
 
 impl CharGrid {
     /// Creates a new CharGrid from a string, splitting and trimming the lines
-    /// Errors if the input is empty
-    /// Errors if any of the lines differs in length
-    pub fn new(input: &str) -> Result<CharGrid> {
+    /// Panics if the input is empty
+    /// Panics if any of the lines differs in length
+    pub fn new(input: &str) -> CharGrid {
         let lines: Vec<String> = input
             .trim()
             .lines()
@@ -26,17 +25,16 @@ impl CharGrid {
         let line_len = lines
             .first()
             .map(|f| f.len())
-            .ok_or(anyhow!("empty vector"))?;
+            .expect("failed to get a valid line length");
 
-        if line_len == 0 {
-            return Err(anyhow!("line length cannot be empty"));
-        }
+        assert!(line_len != 0, "line length cannot be empty");
 
-        if lines.iter().any(|f| f.len() != line_len) {
-            return Err(anyhow!("all lines must be of equal width"));
-        }
+        assert!(
+            lines.iter().all(|f| f.len() == line_len),
+            "all lines must be of equal width"
+        );
 
-        Ok(CharGrid { lines })
+        CharGrid { lines }
     }
 }
 
@@ -105,13 +103,15 @@ mod test {
     use super::*;
 
     #[rstest]
+    #[should_panic]
     fn new_should_return_none_when_empty() {
         let input = "";
 
-        assert!(CharGrid::new(input).is_err());
+        CharGrid::new(input);
     }
 
     #[rstest]
+    #[should_panic]
     fn new_should_fail_when_lines_are_not_equal_len() {
         let input = "|...|
 ||..|
@@ -119,7 +119,7 @@ mod test {
 |||.|
 |||||";
 
-        assert!(CharGrid::new(input).is_err());
+        CharGrid::new(input);
     }
 
     #[rstest]
@@ -132,7 +132,7 @@ mod test {
 
 ";
 
-        let grid = CharGrid::new(input).unwrap();
+        let grid = CharGrid::new(input);
 
         assert_eq!(grid.bounds(), (Point::new(0, 0), Point::new(4, 4)));
     }
@@ -145,7 +145,7 @@ mod test {
 |||.|
 |||||";
 
-        let mut grid = CharGrid::new(input).unwrap();
+        let mut grid = CharGrid::new(input);
 
         assert_eq!(grid.bounds(), (Point::new(0, 0), Point::new(4, 4)));
 
@@ -178,7 +178,7 @@ mod test {
 |||.|
 |||||";
 
-        let grid = CharGrid::new(input).unwrap();
+        let grid = CharGrid::new(input);
 
         let result = format!("{:?}", grid);
 
@@ -193,7 +193,7 @@ mod test {
 |||.|
 |||||";
 
-        let grid = CharGrid::new(input).unwrap();
+        let grid = CharGrid::new(input);
 
         let result = grid.draw(|_c, point| point.unwrap().to_string());
 

@@ -44,7 +44,7 @@ mod test {
 -   -
 -----
 ";
-        let grid = CharGrid::new(input).unwrap();
+        let grid = CharGrid::new(input);
 
         let result = floodfill(&grid, Point::new(1, 1), |_point, char| match char {
             None => true,
@@ -70,7 +70,7 @@ mod test {
 - ---
 -- --
 ";
-        let grid = CharGrid::new(input).unwrap();
+        let grid = CharGrid::new(input);
 
         let result = floodfill(&grid, Point::new(1, 1), |_point, char| match char {
             None => true,
@@ -104,7 +104,7 @@ mod test {
 -   -
 -   -
 ";
-        let grid = CharGrid::new(input).unwrap();
+        let grid = CharGrid::new(input);
 
         let result = floodfill(&grid, Point::new(1, 1), |_point, char| match char {
             None => true,

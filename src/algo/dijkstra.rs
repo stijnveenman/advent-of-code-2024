@@ -102,7 +102,7 @@ mod test {
 .---.
 .....
 ";
-        let grid = CharGrid::new(input).unwrap();
+        let grid = CharGrid::new(input);
 
         let result = dijkstra(
             &grid,
@@ -142,7 +142,7 @@ mod test {
 #..#############..####..####..
 #.....#..............#..#.....
 ";
-        let grid = CharGrid::new(input).unwrap();
+        let grid = CharGrid::new(input);
 
         let result = dijkstra(
             &grid,
@@ -170,7 +170,7 @@ mod test {
 1---9
 11111
 ";
-        let grid = CharGrid::new(input).unwrap();
+        let grid = CharGrid::new(input);
 
         let result = dijkstra(
             &grid,
