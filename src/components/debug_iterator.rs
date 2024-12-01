@@ -18,16 +18,13 @@ where
     }
 }
 
-pub trait DbgIterator<T> {
-    fn dbg(self) -> DebugIter<T>;
-}
-
-impl<T> DbgIterator<T> for T
-where
-    T: Iterator,
-    T::Item: Debug,
-{
-    fn dbg(self) -> DebugIter<T> {
+pub trait DbgIterator: Iterator {
+    fn dbg(self) -> DebugIter<Self>
+    where
+        Self: Sized,
+    {
         DebugIter { i: self }
     }
 }
+
+impl<T> DbgIterator for T where T: Iterator + ?Sized {}
