@@ -24,11 +24,33 @@ pub trait Grid<'a> {
     /// grid implementation does not allow for autoscaling.
     fn set(&mut self, point: &Point, value: Self::SetItem);
 
-    /// Returns all points of the grid. Depending on the grid implementation this may or may not
+    /// Returns all set points of the grid. Depending on the grid implementation this may or may not
     /// cover the full bounds of the grid
     fn keys(&self) -> impl Iterator<Item = Point>;
     /// Returns all values stored in the grid
     fn values(&'a self) -> impl Iterator<Item = Self::ReturnItem>;
     /// Returns a tuple of the point and value for the entire grid
     fn entries(&'a self) -> impl Iterator<Item = (Point, Self::ReturnItem)>;
+
+    /// Draw a visual representation of the grid
+    fn draw<DrawFn: Fn(&Point, Option<Self::ReturnItem>) -> String>(
+        &'a self,
+        draw_fn: DrawFn,
+    ) -> String {
+        let mut s = String::new();
+        let (lower, upper) = self.bounds();
+
+        for y in lower.y..=upper.y {
+            for x in lower.x..=upper.x {
+                let point = Point::new(x, y);
+                s += &draw_fn(&point, self.get(&point));
+            }
+
+            if y != upper.y {
+                s += "\n";
+            }
+        }
+
+        s
+    }
 }

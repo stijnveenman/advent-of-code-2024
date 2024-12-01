@@ -182,7 +182,22 @@ mod test {
 
         let result = format!("{:?}", grid);
 
-        assert_eq!(input, result);
+        assert_eq!(result, input);
+    }
+
+    #[rstest]
+    fn char_grid_can_draw() {
+        let input = "|...|
+||..|
+|||.|
+|||.|
+|||||";
+
+        let grid = CharGrid::new(input).unwrap();
+
+        let result = grid.draw(|_c, point| point.unwrap().to_string());
+
+        assert_eq!(result, input)
     }
 }
 
