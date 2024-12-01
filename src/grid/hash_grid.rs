@@ -132,4 +132,29 @@ mod test {
         assert_eq!(grid.get(&Point::new(5, 5)), Some(&"world"));
         assert_eq!(grid.get(&Point::new(4, 5)), Some(&"foo"));
     }
+
+    #[rstest]
+    fn hash_grid_can_draw() {
+        let mut grid = HashGrid::new();
+
+        for i in 0..5 {
+            grid.set(&Point::new(i, i), i);
+        }
+
+        let expected = "
+0....
+.1...
+..2..
+...3.
+....4
+"
+        .trim();
+
+        let result = grid.draw(|_point, value| match value {
+            Some(i) => i.to_string(),
+            None => '.'.to_string(),
+        });
+
+        assert_eq!(result, expected)
+    }
 }
