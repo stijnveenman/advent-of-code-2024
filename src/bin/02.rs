@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 
+use advent_of_code::AocItertools;
 use itertools::Itertools;
 
 advent_of_code::solution!(2);
@@ -29,11 +30,7 @@ fn check_safe(report: &[u32]) -> bool {
 pub fn part_one(input: &str) -> Option<u32> {
     let input = input
         .lines()
-        .map(|line| {
-            line.split(" ")
-                .map(|level| level.parse::<u32>().expect("failed to parse level"))
-                .collect_vec()
-        })
+        .map(|line| line.split(" ").u32().collect_vec())
         .collect_vec();
 
     let safe = input.into_iter().filter(|report| check_safe(report));
@@ -54,11 +51,7 @@ fn filter_i(input: &[u32], i: usize) -> Vec<u32> {
 pub fn part_two(input: &str) -> Option<u32> {
     let input = input
         .lines()
-        .map(|line| {
-            line.split(" ")
-                .map(|level| level.parse::<u32>().expect("failed to parse level"))
-                .collect_vec()
-        })
+        .map(|line| line.split(" ").u32().collect_vec())
         .collect_vec();
 
     let safe = input.into_iter().filter(|report| {
