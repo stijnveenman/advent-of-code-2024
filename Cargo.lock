@@ -26,6 +26,7 @@ dependencies = [
  "itertools",
  "pico-args",
  "rayon",
+ "regex",
  "rstest",
  "tinyjson",
 ]
