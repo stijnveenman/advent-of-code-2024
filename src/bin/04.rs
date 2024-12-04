@@ -51,7 +51,48 @@ pub fn part_one(input: &str) -> Option<u32> {
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    None
+    let grid = CharGrid::new(input);
+
+    let result = grid
+        .keys()
+        .filter_map(|a_point| {
+            if grid.get(&a_point).is_none_or(|c| c != 'A') {
+                return None;
+            }
+
+            let lt = grid.get(&(a_point + Point::UP_LEFT))?;
+            if lt != 'M' && lt != 'S' {
+                return None;
+            }
+
+            let rt = grid.get(&(a_point + Point::UP_RIGHT))?;
+            if rt != 'M' && rt != 'S' {
+                return None;
+            }
+
+            let lb = grid.get(&(a_point + Point::DOWN_LEFT))?;
+            if lb != 'M' && lb != 'S' {
+                return None;
+            }
+
+            let rb = grid.get(&(a_point + Point::DOWN_RIGHT))?;
+            if rb != 'M' && rb != 'S' {
+                return None;
+            }
+
+            if lt == lb && rt == rb && lt != rt {
+                return Some(a_point);
+            }
+
+            if lt == rt && lb == rb && lt != lb {
+                return Some(a_point);
+            }
+
+            None
+        })
+        .collect_vec();
+
+    Some(result.len() as u32)
 }
 
 #[cfg(test)]
@@ -67,6 +108,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(9));
     }
 }
