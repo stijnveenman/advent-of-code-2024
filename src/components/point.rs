@@ -15,6 +15,22 @@ impl Point {
     pub const DOWN: Point = Point { x: 0, y: -1 };
     pub const UP: Point = Point { x: 0, y: 1 };
 
+    pub const UP_RIGHT: Point = Point { x: 1, y: 1 };
+    pub const UP_LEFT: Point = Point { x: -1, y: 1 };
+    pub const DOWN_RIGHT: Point = Point { x: 1, y: -1 };
+    pub const DOWN_LEFT: Point = Point { x: -1, y: -1 };
+
+    pub const DIRECTIONS: [Point; 8] = [
+        Self::RIGHT,
+        Self::LEFT,
+        Self::DOWN,
+        Self::UP,
+        Self::UP_RIGHT,
+        Self::UP_LEFT,
+        Self::DOWN_RIGHT,
+        Self::DOWN_LEFT,
+    ];
+
     pub fn new(x: isize, y: isize) -> Point {
         Point { x, y }
     }

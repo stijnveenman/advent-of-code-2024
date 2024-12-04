@@ -53,6 +53,10 @@ impl<'a> Grid<'a> for CharGrid {
     }
 
     fn get(&'a self, point: &Point) -> Option<Self::ReturnItem> {
+        if !self.in_bounds(point) {
+            return None;
+        }
+
         self.lines
             .get(usize::try_from(point.y).unwrap())
             .and_then(|line| line.chars().nth(usize::try_from(point.x).unwrap()))
