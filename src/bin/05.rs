@@ -1,6 +1,3 @@
-use core::panic;
-use std::{cmp::Ordering, collections::BTreeMap};
-
 use advent_of_code::AocItertools;
 use itertools::Itertools;
 
@@ -17,25 +14,21 @@ pub fn part_one(input: &str) -> Option<u32> {
         })
         .collect_vec();
 
-    let mut updates = updates
+    let updates = updates
         .lines()
         .map(|l| l.split(",").u32().collect_vec())
-        .collect_vec();
+        .filter(|update| {
+            let iter = update.iter().zip(update.iter().skip(1));
 
-    for update in updates.iter_mut() {
-        update.sort_by(|a, b| {
-            let s = ordering
-                .iter()
-                .find(|ord| **ord == (*a, *b) || **ord == (*b, *a))
-                .unwrap();
-
-            match s {
-                _ord if *s == (*a, *b) => Ordering::Less,
-                _ord if *s == (*b, *a) => Ordering::Greater,
-                _ => panic!("{}{}, {:?}", a, b, s),
+            for (left, right) in iter {
+                if !ordering.iter().any(|ord| *ord == (*left, *right)) {
+                    return false;
+                }
             }
-        });
-    }
+
+            true
+        })
+        .collect_vec();
 
     let result = updates
         .iter()
