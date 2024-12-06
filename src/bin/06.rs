@@ -6,19 +6,16 @@ use advent_of_code::{
     grid::{char_grid::CharGrid, Grid},
 };
 use itertools::Itertools;
-use rayon::iter::{IntoParallelRefIterator, ParallelBridge};
+use rayon::iter::IntoParallelRefIterator;
 
-advent_of_code::solution!(6);
+advent_of_code::solution!(@impl 6, [part_one, 1] [part_two, 2] [part_twob, 2]);
 
-fn find_loop(grid: &CharGrid, obstacle: &Point) -> bool {
-    let mut current = grid
-        .entries()
-        .find(|(_, c)| *c == '^')
-        .map(|(p, _)| p)
-        .unwrap();
+fn find_loop(grid: &CharGrid, mut current: Point, mut direction: Point, obstacle: &Point) -> bool {
+    if !grid.in_bounds(obstacle) {
+        return false;
+    }
 
     let mut visited = HashSet::new();
-    let mut direction = Point::UP;
 
     while grid.in_bounds(&current) {
         if visited.contains(&(current, direction)) {
@@ -66,8 +63,54 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(visited.len() as u32)
 }
 
+pub fn part_twob(input: &str) -> Option<u32> {
+    let grid = CharGrid::new(input);
+
+    let mut current = grid
+        .entries()
+        .find(|(_, c)| *c == '^')
+        .map(|(p, _)| p)
+        .unwrap();
+    let start = current;
+
+    let mut obstacles = HashSet::new();
+    let mut visited = HashSet::new();
+    let mut direction = Point::UP;
+
+    while grid.in_bounds(&current) {
+        if grid.get(&(current + direction)).is_some_and(|c| c == '#') {
+            direction = direction.rotate_right();
+            continue;
+        }
+
+        visited.insert(current);
+
+        if !visited.contains(&(current + direction))
+            && find_loop(
+                &grid,
+                current,
+                direction.rotate_right(),
+                &(current + direction),
+            )
+        {
+            obstacles.insert(current + direction);
+        }
+
+        current += direction;
+    }
+    obstacles.remove(&start);
+
+    Some(obstacles.len() as u32)
+}
+
 pub fn part_two(input: &str) -> Option<u32> {
     let grid = CharGrid::new(input);
+
+    let start = grid
+        .entries()
+        .find(|(_, c)| *c == '^')
+        .map(|(p, _)| p)
+        .unwrap();
 
     let result = grid
         .entries()
@@ -76,7 +119,7 @@ pub fn part_two(input: &str) -> Option<u32> {
 
     let result = result
         .par_iter()
-        .filter(|(point, _c)| find_loop(&grid, point))
+        .filter(|(point, _c)| find_loop(&grid, start, Point::UP, point))
         .count();
 
     Some(result as u32)
