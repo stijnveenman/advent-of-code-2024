@@ -12,13 +12,13 @@ pub struct Point {
 impl Point {
     pub const RIGHT: Point = Point { x: 1, y: 0 };
     pub const LEFT: Point = Point { x: -1, y: 0 };
-    pub const DOWN: Point = Point { x: 0, y: -1 };
-    pub const UP: Point = Point { x: 0, y: 1 };
+    pub const DOWN: Point = Point { x: 0, y: 1 };
+    pub const UP: Point = Point { x: 0, y: -1 };
 
-    pub const UP_RIGHT: Point = Point { x: 1, y: 1 };
-    pub const UP_LEFT: Point = Point { x: -1, y: 1 };
-    pub const DOWN_RIGHT: Point = Point { x: 1, y: -1 };
-    pub const DOWN_LEFT: Point = Point { x: -1, y: -1 };
+    pub const UP_RIGHT: Point = Point { x: 1, y: -1 };
+    pub const UP_LEFT: Point = Point { x: -1, y: -1 };
+    pub const DOWN_RIGHT: Point = Point { x: 1, y: 1 };
+    pub const DOWN_LEFT: Point = Point { x: -1, y: 1 };
 
     pub const DIRECTIONS: [Point; 8] = [
         Self::RIGHT,
@@ -67,6 +67,40 @@ impl Point {
     pub fn is_within(&self, a: &Point, b: &Point) -> bool {
         (self.x >= a.x && self.y >= a.y && self.x <= b.x && self.y <= b.y)
             || (self.x >= b.x && self.y >= b.y && self.x <= a.x && self.y <= a.y)
+    }
+
+    /// Rotate around a point clockwise, useful to use for changing directions
+    ///
+    /// # Examples
+    /// ````
+    /// use advent_of_code::components::Point;
+    /// assert_eq!(Point::RIGHT.rotate_right(), Point::DOWN);
+    /// assert_eq!(Point::DOWN.rotate_right(), Point::LEFT);
+    /// assert_eq!(Point::LEFT.rotate_right(), Point::UP);
+    /// assert_eq!(Point::UP.rotate_right(), Point::RIGHT);
+    /// ````
+    pub fn rotate_right(&self) -> Point {
+        Point {
+            x: -self.y,
+            y: self.x,
+        }
+    }
+
+    /// Rotate around a point counter clockwise, useful to use for changing directions
+    ///
+    /// # Examples
+    /// ````
+    /// use advent_of_code::components::Point;
+    /// assert_eq!(Point::RIGHT.rotate_left(), Point::UP);
+    /// assert_eq!(Point::UP.rotate_left(), Point::LEFT);
+    /// assert_eq!(Point::LEFT.rotate_left(), Point::DOWN);
+    /// assert_eq!(Point::DOWN.rotate_left(), Point::RIGHT);
+    /// ````
+    pub fn rotate_left(&self) -> Point {
+        Point {
+            x: self.y,
+            y: -self.x,
+        }
     }
 
     /// Returns all neighbours directly horizontal and vertical of the point
