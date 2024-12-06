@@ -71,11 +71,11 @@ pub fn part_twob(input: &str) -> Option<u32> {
         .find(|(_, c)| *c == '^')
         .map(|(p, _)| p)
         .unwrap();
-    let start = current;
 
-    let mut obstacles = HashSet::new();
-    let mut visited = HashSet::new();
+    let mut visited = HashSet::from([current]);
     let mut direction = Point::UP;
+
+    let mut candidates = vec![];
 
     while grid.in_bounds(&current) {
         if grid.get(&(current + direction)).is_some_and(|c| c == '#') {
@@ -85,22 +85,21 @@ pub fn part_twob(input: &str) -> Option<u32> {
 
         visited.insert(current);
 
-        if !visited.contains(&(current + direction))
-            && find_loop(
-                &grid,
-                current,
-                direction.rotate_right(),
-                &(current + direction),
-            )
-        {
-            obstacles.insert(current + direction);
+        if !visited.contains(&(current + direction)) {
+            candidates.push((current, direction));
         }
 
         current += direction;
     }
-    obstacles.remove(&start);
 
-    Some(obstacles.len() as u32)
+    let result = candidates
+        .par_iter()
+        .filter(|(current, direction)| {
+            find_loop(&grid, *current, *direction, &(*current + *direction))
+        })
+        .count();
+
+    Some(result as u32)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
