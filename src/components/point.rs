@@ -109,9 +109,9 @@ impl Point {
     /// ```
     /// use advent_of_code::components::Point;
     /// assert_eq!(Point::new(1,1).neighbours(), vec![
-    ///     Point::new(1,2),
-    ///     Point::new(2,1),
     ///     Point::new(1,0),
+    ///     Point::new(2,1),
+    ///     Point::new(1,2),
     ///     Point::new(0,1)
     /// ]);
     /// ```
@@ -130,10 +130,10 @@ impl Point {
     /// ```
     /// use advent_of_code::components::Point;
     /// assert_eq!(Point::new(1,1).diagonal_neighbours(), vec![
-    ///     Point::new(2,2),
-    ///     Point::new(0,2),
     ///     Point::new(2,0),
-    ///     Point::new(0,0)
+    ///     Point::new(0,0),
+    ///     Point::new(2,2),
+    ///     Point::new(0,2)
     /// ]);
     /// ```
     pub fn diagonal_neighbours(&self) -> Vec<Point> {
@@ -151,14 +151,14 @@ impl Point {
     /// ```
     /// use advent_of_code::components::Point;
     /// assert_eq!(Point::new(1,1).full_neighbours(), vec![
-    ///     Point::new(1,2),
-    ///     Point::new(2,1),
     ///     Point::new(1,0),
+    ///     Point::new(2,1),
+    ///     Point::new(1,2),
     ///     Point::new(0,1),
-    ///     Point::new(2,2),
-    ///     Point::new(0,2),
     ///     Point::new(2,0),
-    ///     Point::new(0,0)
+    ///     Point::new(0,0),
+    ///     Point::new(2,2),
+    ///     Point::new(0,2)
     /// ]);
     /// ```
     pub fn full_neighbours(&self) -> Vec<Point> {
