@@ -1,4 +1,7 @@
+use std::{collections::HashSet, usize};
+
 use advent_of_code::{
+    components::Point,
     grid::{char_grid::CharGrid, Grid},
     AocItertools,
 };
@@ -12,9 +15,26 @@ pub fn part_one(input: &str) -> Option<u32> {
     let mut groups = grid.entries().grouped_by(|(_p, c)| *c);
     groups.remove(&'.');
 
-    dbg!(groups);
+    let mut set = HashSet::new();
 
-    None
+    for (_, v) in groups {
+        for v in v.iter().combinations(2) {
+            let (p1, _) = v.first().unwrap();
+            let (p2, _) = v.get(1).unwrap();
+
+            let b1 = *p1 + (*p1 - *p2);
+            let b2 = *p2 + (*p2 - *p1);
+
+            if grid.in_bounds(&b1) {
+                set.insert(b1);
+            }
+            if grid.in_bounds(&b2) {
+                set.insert(b2);
+            }
+        }
+    }
+
+    Some(set.len() as u32)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
