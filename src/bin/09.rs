@@ -1,5 +1,4 @@
 use core::panic;
-use std::usize;
 
 use itertools::{repeat_n, Itertools};
 
@@ -219,5 +218,29 @@ mod tests {
         unfragment_blocks(&mut blocks);
 
         assert_eq!(blocks, vec![Block::Free(6), Block::Free(0), Block::Free(0)])
+    }
+
+    #[test]
+    fn should_unfragment_blocks2() {
+        let mut blocks = vec![
+            Block::Free(2),
+            Block::Used(3, 3),
+            Block::Free(4),
+            Block::Free(0),
+            Block::Free(2),
+        ];
+
+        unfragment_blocks(&mut blocks);
+
+        assert_eq!(
+            blocks,
+            vec![
+                Block::Free(2),
+                Block::Used(3, 3),
+                Block::Free(6),
+                Block::Free(0),
+                Block::Free(0)
+            ]
+        )
     }
 }
