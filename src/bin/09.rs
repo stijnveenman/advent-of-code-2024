@@ -101,12 +101,21 @@ fn expand_blocks(input: &str) -> Vec<Block> {
 
         is_file = !is_file;
 
-        if length != 0 {
-            v.push(item);
-        }
+        v.push(item);
     }
 
     v
+}
+
+#[allow(dead_code)]
+fn total_size(input: &[Block]) -> usize {
+    input
+        .iter()
+        .map(|i| match i {
+            Block::Free(len) => *len as usize,
+            Block::Used(len, _) => *len as usize,
+        })
+        .sum()
 }
 
 fn compress_blocks(input: &mut Vec<Block>) {
