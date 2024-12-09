@@ -75,7 +75,7 @@ pub fn part_one(input: &str) -> Option<usize> {
     Some(checksum(&input[..len]))
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 enum Block {
     /// (length of the block)
     Free(u32),
@@ -139,7 +139,31 @@ fn compress_blocks(input: &mut Vec<Block>) {
 
         input.insert(free_index, Block::Used(length, idx));
 
+        unfragment_blocks(input);
+
         tail -= 1;
+    }
+}
+
+fn unfragment_blocks(blocks: &mut Vec<Block>) {
+    let mut i = 0usize;
+    while i < blocks.len() {
+        let current_index = i;
+        let Block::Free(mut current_len) = blocks[i] else {
+            i += 1;
+            continue;
+        };
+
+        while let Some(Block::Free(free_len)) = blocks.get(i + 1) {
+            current_len += free_len;
+
+            blocks[i + 1] = Block::Free(0);
+            i += 1;
+        }
+
+        blocks[current_index] = Block::Free(current_len);
+
+        i += 1;
     }
 }
 
@@ -173,6 +197,7 @@ pub fn part_two(input: &str) -> Option<usize> {
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
 
     #[test]
@@ -185,5 +210,14 @@ mod tests {
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, Some(2858));
+    }
+
+    #[test]
+    fn should_unfragment_blocks() {
+        let mut blocks = vec![Block::Free(2), Block::Free(0), Block::Free(4)];
+
+        unfragment_blocks(&mut blocks);
+
+        assert_eq!(blocks, vec![Block::Free(6), Block::Free(0), Block::Free(0)])
     }
 }
