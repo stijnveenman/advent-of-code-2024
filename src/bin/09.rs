@@ -149,12 +149,15 @@ fn compress_blocks(input: &mut Vec<Block>) {
 
         input.insert(free_index, Block::Used(length, idx));
 
-        unfragment_blocks(input);
+        // we would expect to need this, but we don't
+        // unfragment_blocks(input);
 
-        tail -= 1;
+        // If we insert, we don't actually decrement tail as the size of the array increased
+        // instead
     }
 }
 
+#[allow(dead_code)]
 fn unfragment_blocks(blocks: &mut [Block]) {
     let mut i = 0usize;
     while i < blocks.len() {
