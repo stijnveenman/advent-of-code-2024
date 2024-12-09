@@ -74,7 +74,7 @@ pub fn part_one(input: &str) -> Option<usize> {
     Some(checksum(&input[..len]))
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 enum Block {
     /// (length of the block)
     Free(u32),
@@ -101,7 +101,9 @@ fn expand_blocks(input: &str) -> Vec<Block> {
 
         is_file = !is_file;
 
-        v.push(item);
+        if length != 0 {
+            v.push(item);
+        }
     }
 
     v
@@ -153,7 +155,7 @@ fn compress_blocks(input: &mut Vec<Block>) {
     }
 }
 
-fn unfragment_blocks(blocks: &mut Vec<Block>) {
+fn unfragment_blocks(blocks: &mut [Block]) {
     let mut i = 0usize;
     while i < blocks.len() {
         let current_index = i;
@@ -227,6 +229,33 @@ mod tests {
         unfragment_blocks(&mut blocks);
 
         assert_eq!(blocks, vec![Block::Free(6), Block::Free(0), Block::Free(0)])
+    }
+
+    #[test]
+    fn checksum_doest_care_about_empty_free() {
+        let blocks = vec![
+            Block::Free(0),
+            Block::Free(2),
+            Block::Free(0),
+            Block::Free(0),
+            Block::Used(3, 3),
+            Block::Used(3, 3),
+            Block::Free(4),
+            Block::Free(0),
+            Block::Free(2),
+        ];
+
+        let non_empty = blocks
+            .iter()
+            .filter(|&block| match block {
+                Block::Free(len) => *len != 0,
+                Block::Used(_, _) => true,
+            })
+            .cloned()
+            .collect_vec();
+
+        assert_eq!(non_empty.len(), 5);
+        assert_eq!(blocks_checksum(&blocks), blocks_checksum(&non_empty))
     }
 
     #[test]
