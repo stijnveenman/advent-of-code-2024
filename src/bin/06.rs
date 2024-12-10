@@ -5,10 +5,9 @@ use advent_of_code::{
     components::Point,
     grid::{char_grid::CharGrid, Grid},
 };
-use itertools::Itertools;
 use rayon::iter::IntoParallelRefIterator;
 
-advent_of_code::solution!(@impl 6, [part_one, 1] [part_two, 2] [part_twob, 2]);
+advent_of_code::solution!(6);
 
 fn find_loop(grid: &CharGrid, mut current: Point, mut direction: Point, obstacle: &Point) -> bool {
     if !grid.in_bounds(obstacle) {
@@ -63,7 +62,7 @@ pub fn part_one(input: &str) -> Option<u32> {
     Some(visited.len() as u32)
 }
 
-pub fn part_twob(input: &str) -> Option<u32> {
+pub fn part_two(input: &str) -> Option<u32> {
     let grid = CharGrid::new(input);
 
     let mut current = grid
@@ -97,28 +96,6 @@ pub fn part_twob(input: &str) -> Option<u32> {
         .filter(|(current, direction)| {
             find_loop(&grid, *current, *direction, &(*current + *direction))
         })
-        .count();
-
-    Some(result as u32)
-}
-
-pub fn part_two(input: &str) -> Option<u32> {
-    let grid = CharGrid::new(input);
-
-    let start = grid
-        .entries()
-        .find(|(_, c)| *c == '^')
-        .map(|(p, _)| p)
-        .unwrap();
-
-    let result = grid
-        .entries()
-        .filter(|(_point, c)| *c != '^' && *c != '#')
-        .collect_vec();
-
-    let result = result
-        .par_iter()
-        .filter(|(point, _c)| find_loop(&grid, start, Point::UP, point))
         .count();
 
     Some(result as u32)
