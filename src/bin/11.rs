@@ -1,3 +1,5 @@
+use std::usize;
+
 use advent_of_code::AocItertools;
 use itertools::Itertools;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
@@ -29,22 +31,45 @@ fn take_bottom(num: usize, len: usize) -> usize {
     num % modulo
 }
 
-fn count_stones(stone: usize, depth: usize, max_depth: usize) -> usize {
+const MAX: usize = 75;
+
+fn count_stones(
+    stone: usize,
+    depth: usize,
+    max_depth: usize,
+    result_set: &mut [usize; MAX],
+) -> usize {
     if depth >= max_depth {
+        result_set[depth] = 1;
+        dbg!(stone, &result_set[..depth]);
         return 1;
     }
 
     if stone == 0 {
-        return count_stones(1, depth + 1, max_depth);
+        let result = count_stones(1, depth + 1, max_depth, result_set);
+        result_set[depth] = result;
+        return result;
     }
 
     let num_len = num_length(stone);
-    if num_len % 2 == 0 {
-        count_stones(take_top(stone, num_len / 2), depth + 1, max_depth)
-            + count_stones(take_bottom(stone, num_len / 2), depth + 1, max_depth)
+    let result = if num_len % 2 == 0 {
+        count_stones(
+            take_top(stone, num_len / 2),
+            depth + 1,
+            max_depth,
+            result_set,
+        ) + count_stones(
+            take_bottom(stone, num_len / 2),
+            depth + 1,
+            max_depth,
+            result_set,
+        )
     } else {
-        count_stones(stone * 2024, depth + 1, max_depth)
-    }
+        count_stones(stone * 2024, depth + 1, max_depth, result_set)
+    };
+
+    result_set[depth] = result;
+    result
 }
 
 fn solve(input: &str, max_depth: usize) -> Option<usize> {
@@ -52,7 +77,10 @@ fn solve(input: &str, max_depth: usize) -> Option<usize> {
 
     let result = stones
         .par_iter()
-        .map(|stone| count_stones(*stone, 0, max_depth))
+        .map(|stone| {
+            let mut result_set = [0; MAX];
+            count_stones(*stone, 0, max_depth, &mut result_set)
+        })
         .sum();
 
     Some(result)
