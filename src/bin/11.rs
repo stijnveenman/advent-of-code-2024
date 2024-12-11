@@ -66,8 +66,22 @@ pub fn part_one(input: &str) -> Option<usize> {
     Some(result)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<usize> {
+    let stones = input.trim().split(" ").usize().collect_vec();
+
+    let result = stones
+        .par_iter()
+        .map(|stone| {
+            let mut stones = vec![*stone];
+            for _ in 0..75 {
+                stones = map_stones(&stones);
+            }
+
+            stones.len()
+        })
+        .sum();
+
+    Some(result)
 }
 
 #[cfg(test)]
