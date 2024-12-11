@@ -1,8 +1,9 @@
-use std::usize;
+use std::{collections::hash_map::Entry, usize};
 
-use advent_of_code::AocItertools;
+use advent_of_code::{template::commands, AocItertools};
 use itertools::Itertools;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
+use rustc_hash::FxHashMap;
 
 advent_of_code::solution!(11);
 
@@ -33,21 +34,38 @@ fn take_bottom(num: usize, len: usize) -> usize {
 
 const MAX: usize = 75;
 
+fn insert(
+    stone: usize,
+    depth: usize,
+    max_depth: usize,
+    result_set: &mut [usize; MAX],
+    cache: &mut FxHashMap<usize, [usize; MAX]>,
+) {
+    cache.entry(stone).or_insert_with(|| [0; MAX]);
+
+    let entry = cache.get_mut(&stone).unwrap();
+
+    (depth..max_depth).for_each(|i| {
+        entry[i] = result_set[i];
+    });
+}
+
 fn count_stones(
     stone: usize,
     depth: usize,
     max_depth: usize,
     result_set: &mut [usize; MAX],
+    cache: &mut FxHashMap<usize, [usize; MAX]>,
 ) -> usize {
     if depth >= max_depth {
         result_set[depth] = 1;
-        dbg!(stone, &result_set[..depth]);
         return 1;
     }
 
     if stone == 0 {
-        let result = count_stones(1, depth + 1, max_depth, result_set);
+        let result = count_stones(1, depth + 1, max_depth, result_set, cache);
         result_set[depth] = result;
+        insert(stone, depth, max_depth, result_set, cache);
         return result;
     }
 
@@ -58,17 +76,20 @@ fn count_stones(
             depth + 1,
             max_depth,
             result_set,
+            cache,
         ) + count_stones(
             take_bottom(stone, num_len / 2),
             depth + 1,
             max_depth,
             result_set,
+            cache,
         )
     } else {
-        count_stones(stone * 2024, depth + 1, max_depth, result_set)
+        count_stones(stone * 2024, depth + 1, max_depth, result_set, cache)
     };
 
     result_set[depth] = result;
+    insert(stone, depth, max_depth, result_set, cache);
     result
 }
 
@@ -79,7 +100,8 @@ fn solve(input: &str, max_depth: usize) -> Option<usize> {
         .par_iter()
         .map(|stone| {
             let mut result_set = [0; MAX];
-            count_stones(*stone, 0, max_depth, &mut result_set)
+            let mut cache = FxHashMap::default();
+            count_stones(*stone, 0, max_depth, &mut result_set, &mut cache)
         })
         .sum();
 
