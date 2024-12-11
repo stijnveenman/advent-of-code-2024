@@ -1,5 +1,3 @@
-use std::usize;
-
 use advent_of_code::AocItertools;
 use itertools::Itertools;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
@@ -31,38 +29,30 @@ fn take_bottom(num: usize, len: usize) -> usize {
     num % modulo
 }
 
-// we could return a [usize; 2] and filter out the second stone if it didn't split
-// or we could limit a single map stone to a certain size, if it gets above this sive
-// we split resursively into a second call
-//
-// For now, use a memory inefficient way
-fn map_stones(stones: &[usize]) -> Vec<usize> {
-    stones
-        .iter()
-        .flat_map(|stone| match stone {
-            0 => vec![1],
-            s if num_length(*s) % 2 == 0 => vec![
-                take_top(*s, num_length(*s) / 2),
-                take_bottom(*s, num_length(*s) / 2),
-            ],
-            s => vec![*s * 2024], // s * 2024
-        })
-        .collect_vec()
+fn count_stones(stone: usize, depth: usize, max_depth: usize) -> usize {
+    if depth >= max_depth {
+        return 1;
+    }
+
+    if stone == 0 {
+        return count_stones(1, depth + 1, max_depth);
+    }
+
+    let num_len = num_length(stone);
+    if num_len % 2 == 0 {
+        count_stones(take_top(stone, num_len / 2), depth + 1, max_depth)
+            + count_stones(take_bottom(stone, num_len / 2), depth + 1, max_depth)
+    } else {
+        count_stones(stone * 2024, depth + 1, max_depth)
+    }
 }
 
-fn solve(input: &str, depth: usize) -> Option<usize> {
+fn solve(input: &str, max_depth: usize) -> Option<usize> {
     let stones = input.trim().split(" ").usize().collect_vec();
 
     let result = stones
         .par_iter()
-        .map(|stone| {
-            let mut stones = vec![*stone];
-            for _ in 0..depth {
-                stones = map_stones(&stones);
-            }
-
-            stones.len()
-        })
+        .map(|stone| count_stones(*stone, 0, max_depth))
         .sum();
 
     Some(result)
