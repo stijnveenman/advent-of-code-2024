@@ -1,6 +1,6 @@
-use std::{collections::hash_map::Entry, usize};
+use std::usize;
 
-use advent_of_code::{template::commands, AocItertools};
+use advent_of_code::AocItertools;
 use itertools::Itertools;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rustc_hash::FxHashMap;
@@ -50,6 +50,24 @@ fn insert(
     });
 }
 
+fn get(
+    stone: usize,
+    depth: usize,
+    max_depth: usize,
+    cache: &mut FxHashMap<usize, [usize; MAX]>,
+) -> Option<usize> {
+    let entry = cache.get(&stone)?;
+
+    dbg!(depth, max_depth, &entry[..max_depth]);
+
+    let value = entry[depth];
+    if value == 0 {
+        None
+    } else {
+        Some(value)
+    }
+}
+
 fn count_stones(
     stone: usize,
     depth: usize,
@@ -57,6 +75,9 @@ fn count_stones(
     result_set: &mut [usize; MAX],
     cache: &mut FxHashMap<usize, [usize; MAX]>,
 ) -> usize {
+    if let Some(c) = get(stone, depth, max_depth, cache) {
+        return c;
+    }
     if depth >= max_depth {
         result_set[depth] = 1;
         return 1;
