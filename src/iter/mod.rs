@@ -2,9 +2,11 @@ use std::collections::{hash_map::Entry, HashMap};
 
 use debug_iterator::{debug_iterator, DebugIter};
 use u32_iterator::{u32_iterator, U32Iter};
+use usize_iterator::{usize_iterator, UsizeIter};
 
 pub mod debug_iterator;
 mod u32_iterator;
+mod usize_iterator;
 
 pub trait AocItertools: Iterator {
     fn dbg(self) -> DebugIter<Self>
@@ -19,6 +21,13 @@ pub trait AocItertools: Iterator {
         Self: Sized,
     {
         u32_iterator(self)
+    }
+
+    fn usize(self) -> UsizeIter<Self>
+    where
+        Self: Sized,
+    {
+        usize_iterator(self)
     }
 
     fn grouped_by<TKey, T: Fn(&Self::Item) -> TKey>(

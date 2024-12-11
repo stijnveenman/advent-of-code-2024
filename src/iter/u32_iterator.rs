@@ -13,7 +13,7 @@ where
 
         match r.parse::<u32>() {
             Ok(v) => Some(v),
-            Err(e) => panic!("failed to parse u32 for {}: {}", r, e),
+            Err(e) => panic!("failed to parse u32 for [{}]: {}", r, e),
         }
     }
 }
