@@ -1,3 +1,5 @@
+use std::usize;
+
 use advent_of_code::AocItertools;
 use itertools::Itertools;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
@@ -48,14 +50,14 @@ fn map_stones(stones: &[usize]) -> Vec<usize> {
         .collect_vec()
 }
 
-pub fn part_one(input: &str) -> Option<usize> {
+fn solve(input: &str, depth: usize) -> Option<usize> {
     let stones = input.trim().split(" ").usize().collect_vec();
 
     let result = stones
         .par_iter()
         .map(|stone| {
             let mut stones = vec![*stone];
-            for _ in 0..25 {
+            for _ in 0..depth {
                 stones = map_stones(&stones);
             }
 
@@ -66,22 +68,12 @@ pub fn part_one(input: &str) -> Option<usize> {
     Some(result)
 }
 
+pub fn part_one(input: &str) -> Option<usize> {
+    solve(input, 25)
+}
+
 pub fn part_two(input: &str) -> Option<usize> {
-    let stones = input.trim().split(" ").usize().collect_vec();
-
-    let result = stones
-        .par_iter()
-        .map(|stone| {
-            let mut stones = vec![*stone];
-            for _ in 0..75 {
-                stones = map_stones(&stones);
-            }
-
-            stones.len()
-        })
-        .sum();
-
-    Some(result)
+    None
 }
 
 #[cfg(test)]
