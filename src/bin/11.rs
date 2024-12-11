@@ -32,6 +32,7 @@ fn take_bottom(num: usize, len: usize) -> usize {
 
 const MAX: usize = 75;
 
+#[allow(dead_code)]
 fn insert(
     stone: usize,
     depth: usize,
@@ -54,6 +55,7 @@ fn insert(
     cache.insert(stone, (entry, cache_len));
 }
 
+#[allow(dead_code)]
 fn get(
     stone: usize,
     depth: usize,
@@ -85,7 +87,7 @@ fn count_stones(
     depth: usize,
     max_depth: usize,
     result_set: &mut [usize; MAX],
-    cache: &mut FxHashMap<usize, ([usize; MAX], usize)>,
+    cache: &mut FxHashMap<(usize, usize), usize>,
 ) -> usize {
     if depth >= max_depth {
         return 1;
@@ -95,13 +97,13 @@ fn count_stones(
         result_set[depth + 1] = 0;
     }
 
-    if let Some(c) = get(stone, depth, max_depth, cache) {
-        return c;
+    if let Some(c) = cache.get(&(stone, depth)) {
+        return *c;
     }
 
     if stone == 0 {
         let result = count_stones(1, depth + 1, max_depth, result_set, cache);
-        insert(stone, depth, max_depth, result_set, cache);
+        cache.insert((stone, depth), result);
         return result;
     }
 
@@ -124,7 +126,7 @@ fn count_stones(
     } else {
         count_stones(stone * 2024, depth + 1, max_depth, result_set, cache)
     };
-    insert(stone, depth, max_depth, result_set, cache);
+    cache.insert((stone, depth), value);
     value
 }
 
@@ -145,11 +147,11 @@ fn solve(input: &str, max_depth: usize) -> Option<usize> {
 }
 
 pub fn part_one(input: &str) -> Option<usize> {
-    solve(input, 75)
+    solve(input, 25)
 }
 
 pub fn part_two(input: &str) -> Option<usize> {
-    None
+    solve(input, 75)
 }
 
 #[cfg(test)]
@@ -165,7 +167,7 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(65601038650482));
     }
 
     #[test]
