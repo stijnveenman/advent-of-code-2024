@@ -75,23 +75,18 @@ fn count_stones(
     result_set: &mut [usize; MAX],
     cache: &mut FxHashMap<usize, [usize; MAX]>,
 ) -> usize {
-    if let Some(c) = get(stone, depth, max_depth, cache) {
-        return c;
-    }
     if depth >= max_depth {
-        result_set[depth] = 1;
         return 1;
     }
 
     if stone == 0 {
         let result = count_stones(1, depth + 1, max_depth, result_set, cache);
-        result_set[depth] = result;
-        insert(stone, depth, max_depth, result_set, cache);
         return result;
     }
 
     let num_len = num_length(stone);
-    let result = if num_len % 2 == 0 {
+    if num_len % 2 == 0 {
+        result_set[depth] += 1;
         count_stones(
             take_top(stone, num_len / 2),
             depth + 1,
@@ -107,11 +102,7 @@ fn count_stones(
         )
     } else {
         count_stones(stone * 2024, depth + 1, max_depth, result_set, cache)
-    };
-
-    result_set[depth] = result;
-    insert(stone, depth, max_depth, result_set, cache);
-    result
+    }
 }
 
 fn solve(input: &str, max_depth: usize) -> Option<usize> {
@@ -122,6 +113,7 @@ fn solve(input: &str, max_depth: usize) -> Option<usize> {
         .map(|stone| {
             let mut result_set = [0; MAX];
             let mut cache = FxHashMap::default();
+
             count_stones(*stone, 0, max_depth, &mut result_set, &mut cache)
         })
         .sum();
@@ -151,5 +143,11 @@ mod tests {
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, None);
+    }
+
+    #[test]
+    fn extra_example() {
+        let result = solve("125 17", 6);
+        assert_eq!(result, Some(22));
     }
 }
