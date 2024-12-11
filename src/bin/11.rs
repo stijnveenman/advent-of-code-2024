@@ -58,18 +58,26 @@ fn get(
     stone: usize,
     depth: usize,
     max_depth: usize,
-    cache: &mut FxHashMap<usize, [usize; MAX]>,
+    cache: &mut FxHashMap<usize, ([usize; MAX], usize)>,
 ) -> Option<usize> {
-    let entry = cache.get(&stone)?;
+    let (entry, cache_len) = cache.get(&stone)?;
+    let steps_remaining = max_depth - depth;
 
-    dbg!(depth, max_depth, &entry[..max_depth]);
-
-    let value = entry[depth];
-    if value == 0 {
-        None
-    } else {
-        Some(value)
+    if steps_remaining > *cache_len {
+        return None;
     }
+
+    dbg!(
+        "hit",
+        &entry[..*cache_len],
+        depth,
+        max_depth,
+        steps_remaining
+    );
+
+    dbg!(stone);
+
+    Some(entry[steps_remaining - 1])
 }
 
 fn count_stones(
@@ -81,6 +89,14 @@ fn count_stones(
 ) -> usize {
     if depth >= max_depth {
         return 1;
+    }
+
+    if depth + 1 < MAX {
+        result_set[depth + 1] = 0;
+    }
+
+    if let Some(c) = get(stone, depth, max_depth, cache) {
+        return c;
     }
 
     if stone == 0 {
@@ -121,9 +137,7 @@ fn solve(input: &str, max_depth: usize) -> Option<usize> {
             let mut result_set = [0; MAX];
             let mut cache = FxHashMap::default();
 
-            let v = count_stones(*stone, 0, max_depth, &mut result_set, &mut cache);
-            dbg!(stone, v, cache.get(stone));
-            v
+            count_stones(*stone, 0, max_depth, &mut result_set, &mut cache)
         })
         .sum();
 
