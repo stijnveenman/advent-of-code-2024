@@ -49,9 +49,14 @@ impl Machine {
 
         let a = (self.prize.x - self.b.x * b) / self.a.x;
 
-        let result = a * 3 + b;
+        //  ¯\_(ツ)_/¯ only needed for 1 specific point
+        if self.a.x * a + self.b.x * b != self.prize.x
+            || self.a.y * a + self.b.y * b != self.prize.y
+        {
+            return None;
+        }
 
-        Some(result)
+        Some(a * 3 + b)
     }
 }
 
@@ -74,7 +79,6 @@ pub fn part_two(input: &str) -> Option<isize> {
         })
         .collect_vec();
 
-    dbg!(&machines);
     let result = machines.par_iter().filter_map(|m| m.cost()).sum();
 
     Some(result)
@@ -93,6 +97,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(875318608908));
     }
 }
