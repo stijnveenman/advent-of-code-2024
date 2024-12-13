@@ -30,14 +30,38 @@ impl Machine {
 
         Machine { a, b, prize }
     }
+
+    fn cost(&self) -> Option<usize> {
+        //You estimate that each button would need to be pressed no more than 100 times to win a prize
+        for i in 0..=100 {
+            let a_total = self.a * i;
+            let remaining = self.prize - a_total;
+
+            let x_rem = remaining.x % self.b.x;
+            let y_rem = remaining.y % self.b.y;
+            if x_rem != 0 || y_rem != 0 {
+                continue;
+            }
+            let x_div = remaining.x / self.b.x;
+            let y_div = remaining.y / self.b.y;
+
+            if x_div == y_div {
+                return Some(((i * 3) + x_div) as usize);
+            }
+        }
+
+        None
+    }
 }
 
-pub fn part_one(input: &str) -> Option<u32> {
+pub fn part_one(input: &str) -> Option<usize> {
     let machines = input.split("\n\n").map(Machine::from_string).collect_vec();
 
-    dbg!(machines);
+    dbg!(&machines);
 
-    None
+    let result = machines.iter().filter_map(|m| m.cost()).sum();
+
+    Some(result)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
