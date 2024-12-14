@@ -1,9 +1,11 @@
-use advent_of_code::components::Point;
+use std::usize;
+
+use advent_of_code::{components::Point, AocItertools};
 use itertools::Itertools;
 
 advent_of_code::solution!(14);
 
-fn solve_part_one(input: &str, size: Point) -> Option<u32> {
+fn solve_part_one(input: &str, size: Point) -> Option<usize> {
     let robots = input
         .lines()
         .map(|l| {
@@ -12,18 +14,39 @@ fn solve_part_one(input: &str, size: Point) -> Option<u32> {
             let (_, v) = v.split_once("=").unwrap();
 
             (
-                Point::parse_seperated(p, ","),
-                Point::parse_seperated(v, ","),
+                Point::parse_seperated(p, ",").unwrap(),
+                Point::parse_seperated(v, ",").unwrap(),
             )
         })
         .collect_vec();
 
-    dbg!(robots);
+    let x_split = size.x / 2;
+    let y_split = size.y / 2;
 
-    None
+    let value = robots
+        .iter()
+        .map(|(p, v)| {
+            let pos = *p + (*v * 100);
+
+            Point::new(pos.x % size.x, pos.y % size.y)
+        })
+        .map(|p| {
+            let x = if p.x < 0 { size.x + p.x } else { p.x };
+            let y = if p.y < 0 { size.y + p.y } else { p.y };
+
+            Point::new(x, y)
+        })
+        .filter(|p| p.x != x_split && p.y != y_split)
+        .map(|p| (p.x < x_split, p.y < y_split))
+        .grouped_by(|x| *x)
+        .values()
+        .map(|v| v.len())
+        .product();
+
+    Some(value)
 }
 
-pub fn part_one(input: &str) -> Option<u32> {
+pub fn part_one(input: &str) -> Option<usize> {
     solve_part_one(input, Point::new(101, 103))
 }
 
