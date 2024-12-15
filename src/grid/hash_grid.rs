@@ -70,6 +70,16 @@ impl<'a, T> HashGrid<'a, T> {
     }
 }
 
+impl<'a> HashGrid<'a, char> {
+    #[allow(dead_code)]
+    pub fn print_char(&self) {
+        self.print(|_p, c| match c {
+            Some(c) => c.to_string(),
+            None => " ".to_string(),
+        });
+    }
+}
+
 impl<'a, T> Default for HashGrid<'a, T> {
     fn default() -> Self {
         Self::new()

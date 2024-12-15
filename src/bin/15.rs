@@ -89,7 +89,32 @@ pub fn part_one(input: &str) -> Option<usize> {
     Some(result)
 }
 
+fn expand(grid: HashGrid<'_, char>) -> HashGrid<'_, char> {
+    let mut new_grid = HashGrid::new();
+
+    for (point, c) in grid.entries() {
+        match c {
+            'O' => {
+                new_grid.set(&Point::new(point.x * 2, point.y), '[');
+                new_grid.set(&Point::new(point.x * 2 + 1, point.y), ']');
+            }
+            '#' => {
+                new_grid.set(&Point::new(point.x * 2, point.y), '#');
+                new_grid.set(&Point::new(point.x * 2 + 1, point.y), '#');
+            }
+            c => panic!("{} not handled", c),
+        }
+    }
+
+    new_grid
+}
+
 pub fn part_two(input: &str) -> Option<u32> {
+    let (mut pos, grid, moves) = parse(input);
+    let grid = expand(grid);
+
+    grid.print_char();
+
     None
 }
 
@@ -106,6 +131,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(9021));
     }
 }
