@@ -57,6 +57,42 @@ fn try_move(point: &Point, dir: &Point, grid: &mut HashGrid<'_, char>) -> bool {
     true
 }
 
+fn try_move_2w(point: &Point, dir: &Point, grid: &mut HashGrid<'_, char>) -> bool {
+    if grid.get(point).is_some_and(|c| *c == '#') {
+        dbg!("wall", point);
+        return false;
+    }
+
+    if grid.get(point).is_none() {
+        dbg!("isnone");
+        return true;
+    }
+
+    // let b = grid.get(point).unwrap();
+
+    if dir == &Point::RIGHT || dir == &Point::LEFT {
+        // horizontal move
+
+        let next = *point + (*dir * 2);
+
+        if !try_move_2w(&next, dir, grid) {
+            return false;
+        }
+
+        let c = grid.remove(&(*point + (*dir))).unwrap();
+        grid.set(&(*point + *dir * 2), c);
+
+        let c = grid.remove(point).unwrap();
+        grid.set(&(*point + *dir), c);
+    } else {
+        // vertical move
+
+        todo!()
+    }
+
+    true
+}
+
 pub fn part_one(input: &str) -> Option<usize> {
     let (mut pos, mut grid, moves) = parse(input);
 
@@ -110,17 +146,70 @@ fn expand(grid: HashGrid<'_, char>) -> HashGrid<'_, char> {
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    let (mut pos, grid, moves) = parse(input);
-    let grid = expand(grid);
+    let (pos, grid, moves) = parse(input);
+    let mut grid = expand(grid);
+    let mut pos = Point::new(pos.x * 2, pos.y);
 
-    grid.print_char();
+    grid.print(|p, c| {
+        if *p == pos {
+            return "@".into();
+        }
+
+        match c {
+            Some(c) => c.to_string(),
+            None => " ".to_string(),
+        }
+    });
+
+    for dir in moves {
+        let next = pos + dir;
+
+        if grid.contains(&next) {
+            if try_move_2w(&next, &dir, &mut grid) {
+                pos = next;
+            }
+        } else {
+            pos = next;
+        }
+
+        grid.print(|p, c| {
+            if *p == pos {
+                return "@".into();
+            }
+
+            match c {
+                Some(c) => c.to_string(),
+                None => " ".to_string(),
+            }
+        });
+        println!();
+    }
 
     None
 }
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
+
+    #[test]
+    fn part2_example() {
+        let input = "#######
+#...#.#
+#.....#
+#..OO@#
+#..O..#
+#.....#
+#######
+
+<vv<<^^<<^^";
+
+        let result = part_two(input);
+
+        // Incorrect
+        assert_eq!(result, Some(105));
+    }
 
     #[test]
     fn test_part_one() {
