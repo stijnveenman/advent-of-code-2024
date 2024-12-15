@@ -2,7 +2,7 @@ use std::{collections::HashMap, marker::PhantomData};
 
 use crate::components::Point;
 
-use super::Grid;
+use super::{char_grid::CharGrid, Grid};
 
 #[derive(PartialEq, Eq)]
 pub struct HashGrid<'a, T> {
@@ -21,6 +21,25 @@ impl<'a, T> HashGrid<'a, T> {
             grid: HashMap::new(),
             lower: Point::new(0, 0),
             upper: Point::new(0, 0),
+            phantom: PhantomData,
+        }
+    }
+
+    pub fn from_chargrid<F>(grid: CharGrid, convert_fn: F) -> HashGrid<'a, T>
+    where
+        F: Fn(char) -> Option<T>,
+    {
+        let (lower, upper) = grid.bounds();
+
+        let grid = grid
+            .entries()
+            .filter_map(|(p, v)| convert_fn(v).map(|v| (p, v)))
+            .collect();
+
+        HashGrid {
+            grid,
+            lower,
+            upper,
             phantom: PhantomData,
         }
     }
