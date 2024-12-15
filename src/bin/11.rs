@@ -1,6 +1,6 @@
 use advent_of_code::AocItertools;
 use itertools::Itertools;
-use rayon::iter::{IntoParallelRefIterator, MaxLen, ParallelIterator};
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use rustc_hash::FxHashMap;
 
 advent_of_code::solution!(11);

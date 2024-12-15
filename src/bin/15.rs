@@ -4,6 +4,7 @@ use std::usize;
 use advent_of_code::{
     components::Point,
     grid::{char_grid::CharGrid, hash_grid::HashGrid, Grid},
+    AocItertools,
 };
 use itertools::Itertools;
 
@@ -59,16 +60,12 @@ fn try_move(point: &Point, dir: &Point, grid: &mut HashGrid<'_, char>) -> bool {
 
 fn try_move_2w(point: &Point, dir: &Point, grid: &mut HashGrid<'_, char>) -> bool {
     if grid.get(point).is_some_and(|c| *c == '#') {
-        dbg!("wall", point);
         return false;
     }
 
     if grid.get(point).is_none() {
-        dbg!("isnone");
         return true;
     }
-
-    // let b = grid.get(point).unwrap();
 
     if dir == &Point::RIGHT || dir == &Point::LEFT {
         // horizontal move
@@ -87,10 +84,31 @@ fn try_move_2w(point: &Point, dir: &Point, grid: &mut HashGrid<'_, char>) -> boo
     } else {
         // vertical move
 
-        todo!()
+        let b = grid.get(point).unwrap();
+        let (left, right) = get_left_right_box(point, *b);
+
+        // This will modify the grid if either of these fails but the other succeeds, so we need to
+        // copy the grid before the original try_move_2w attempt and revert if it fails
+        if !try_move_2w(&(left + *dir), dir, grid) || !try_move_2w(&(right + *dir), dir, grid) {
+            return false;
+        }
+
+        let c = grid.remove(&left).unwrap();
+        grid.set(&(left + *dir), c);
+
+        let c = grid.remove(&right).unwrap();
+        grid.set(&(right + *dir), c);
     }
 
     true
+}
+
+fn get_left_right_box(point: &Point, c: char) -> (Point, Point) {
+    if c == '[' {
+        (*point, *point + Point::RIGHT)
+    } else {
+        (*point + Point::LEFT, *point)
+    }
 }
 
 pub fn part_one(input: &str) -> Option<usize> {
@@ -145,47 +163,61 @@ fn expand(grid: HashGrid<'_, char>) -> HashGrid<'_, char> {
     new_grid
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
+pub fn part_two(input: &str) -> Option<usize> {
     let (pos, grid, moves) = parse(input);
     let mut grid = expand(grid);
     let mut pos = Point::new(pos.x * 2, pos.y);
 
-    grid.print(|p, c| {
-        if *p == pos {
-            return "@".into();
-        }
-
-        match c {
-            Some(c) => c.to_string(),
-            None => " ".to_string(),
-        }
-    });
+    // grid.print(|p, c| {
+    //     if *p == pos {
+    //         return "@".into();
+    //     }
+    //
+    //     match c {
+    //         Some(c) => c.to_string(),
+    //         None => " ".to_string(),
+    //     }
+    // });
 
     for dir in moves {
         let next = pos + dir;
 
         if grid.contains(&next) {
+            let old = grid.clone();
+
             if try_move_2w(&next, &dir, &mut grid) {
                 pos = next;
+            } else {
+                // Revert grid on failed move
+                grid = old;
             }
         } else {
             pos = next;
         }
 
-        grid.print(|p, c| {
-            if *p == pos {
-                return "@".into();
-            }
-
-            match c {
-                Some(c) => c.to_string(),
-                None => " ".to_string(),
-            }
-        });
-        println!();
+        // grid.print(|p, c| {
+        //     if *p == pos {
+        //         return "@".into();
+        //     }
+        //
+        //     match c {
+        //         Some(c) => c.to_string(),
+        //         None => " ".to_string(),
+        //     }
+        // });
+        // println!();
     }
 
-    None
+    let result = grid
+        .entries()
+        .filter_map(|(p, c)| match c {
+            '[' => Some(p),
+            _ => None,
+        })
+        .map(|p| (p.y * 100 + p.x) as usize)
+        .sum();
+
+    Some(result)
 }
 
 #[cfg(test)]
@@ -207,8 +239,7 @@ mod tests {
 
         let result = part_two(input);
 
-        // Incorrect
-        assert_eq!(result, Some(105));
+        assert_eq!(result, Some(618));
     }
 
     #[test]

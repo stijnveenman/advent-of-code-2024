@@ -4,7 +4,7 @@ use crate::components::Point;
 
 use super::{char_grid::CharGrid, Grid};
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Clone)]
 pub struct HashGrid<'a, T> {
     grid: HashMap<Point, T>,
     lower: Point,
