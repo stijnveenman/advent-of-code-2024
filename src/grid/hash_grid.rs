@@ -60,6 +60,14 @@ impl<'a, T> HashGrid<'a, T> {
         self.lower.x = self.lower.x.min(point.x);
         self.lower.y = self.lower.y.min(point.y);
     }
+
+    pub fn contains(&self, point: &Point) -> bool {
+        self.grid.contains_key(point)
+    }
+
+    pub fn remove(&mut self, point: &Point) -> Option<T> {
+        self.grid.remove(point)
+    }
 }
 
 impl<'a, T> Default for HashGrid<'a, T> {
