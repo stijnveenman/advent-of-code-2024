@@ -53,4 +53,11 @@ pub trait Grid<'a> {
 
         s
     }
+
+    /// Same as Self::draw but prints the result to stdout
+    fn print<DrawFn: Fn(&Point, Option<Self::ReturnItem>) -> String>(&'a self, draw_fn: DrawFn) {
+        let s = self.draw(draw_fn);
+
+        println!("{}", s);
+    }
 }
