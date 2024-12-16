@@ -17,6 +17,7 @@ pub trait Grid<'a> {
         point.is_within(&bounds.0, &bounds.1)
     }
 
+    /// MARKER https://doc.rust-lang.org/std/ops/trait.Index.html
     /// Gets the item for a certain point, should return None if the point falls outside of the
     /// bounds. Can return None if the point is within the bounds depending on the grid
     fn get(&'a self, point: &Point) -> Option<Self::ReturnItem>;
