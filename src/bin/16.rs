@@ -4,6 +4,7 @@ use advent_of_code::{
     components::Point,
     grid::{char_grid::CharGrid, Grid},
 };
+use itertools::Itertools;
 
 advent_of_code::solution!(16);
 
@@ -72,6 +73,7 @@ fn dijkstra(grid: &CharGrid, start: Point, end: Point) -> Option<usize> {
     None
 }
 
+#[allow(clippy::type_complexity)]
 fn dijkstra2(grid: &CharGrid, start: Point, end: Point) -> Option<usize> {
     let mut closed = HashMap::new();
     let mut open = BTreeSet::from([SearchPoint(0, start, Point::RIGHT)]);
@@ -105,14 +107,16 @@ fn dijkstra2(grid: &CharGrid, start: Point, end: Point) -> Option<usize> {
         .filter(|point| grid.get(&point.1).is_some_and(|c| c != '#'));
 
         for n in next {
-            if let Some(prev_n) = previous.get(&(n.1, n.2)) {
-                if prev_n.0 > n.0 {
-                    // Improving prev
-                    previous.insert((n.1, n.2), (n.0, vec![(current, direction)]));
-                } else if prev_n.0 == n.0 {
-                    // We should do something with this
-                    println!();
-                    // dbg!("equal prev", prev_n.1, (current, direction));
+            if let Some(prev_n) = previous.get_mut(&(n.1, n.2)) {
+                match prev_n.0.cmp(&n.0) {
+                    std::cmp::Ordering::Less => {}
+                    std::cmp::Ordering::Greater => {
+                        // Improving prev
+                        previous.insert((n.1, n.2), (n.0, vec![(current, direction)]));
+                    }
+                    std::cmp::Ordering::Equal => {
+                        prev_n.1.push((current, direction));
+                    }
                 }
             } else {
                 previous.insert((n.1, n.2), (n.0, vec![(current, direction)]));
@@ -124,7 +128,22 @@ fn dijkstra2(grid: &CharGrid, start: Point, end: Point) -> Option<usize> {
         closed.insert((current, direction), distance);
     }
 
-    let mut open = previous.get(&(end, Point::UP)).unwrap().1.clone();
+    let best_val = Point::DIRECTIONS_4
+        .iter()
+        .filter_map(|dir| previous.get(&(end, *dir)))
+        .map(|v| v.0)
+        .min()
+        .unwrap();
+    let best_end = Point::DIRECTIONS_4
+        .iter()
+        .filter_map(|dir| previous.get(&(end, *dir)))
+        .filter(|x| x.0 == best_val)
+        .flat_map(|v| v.1.clone())
+        .collect_vec();
+
+    // dbg!(&best_end);
+
+    let mut open = best_end;
     let mut visit_set = HashSet::from([start, end]);
 
     while let Some(current) = open.pop() {
@@ -140,17 +159,17 @@ fn dijkstra2(grid: &CharGrid, start: Point, end: Point) -> Option<usize> {
         open.extend(next);
     }
 
-    grid.print(|p, c| {
-        if visit_set.contains(p) {
-            return "O".into();
-        }
-        match c {
-            Some('#') => "#".into(),
-            _ => " ".into(),
-        }
-    });
+    // grid.print(|p, c| {
+    //     if visit_set.contains(p) {
+    //         return "O".into();
+    //     }
+    //     match c {
+    //         Some('#') => "#".into(),
+    //         _ => " ".into(),
+    //     }
+    // });
 
-    None
+    Some(visit_set.len())
 }
 
 pub fn part_one(input: &str) -> Option<usize> {
