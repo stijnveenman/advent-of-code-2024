@@ -124,19 +124,18 @@ fn dijkstra2(grid: &CharGrid, start: Point, end: Point) -> Option<usize> {
         closed.insert((current, direction), distance);
     }
 
-    let mut current = previous.get(&(end, Point::UP)).unwrap();
-    let mut visit_set = HashSet::from([end]);
+    let mut open = vec![previous.get(&(end, Point::UP)).unwrap()];
+    let mut visit_set = HashSet::from([start, end]);
 
-    loop {
+    while let Some(current) = open.pop() {
         let (_, prev) = current;
 
         visit_set.insert(prev.0);
 
-        if prev.0 == start {
-            break;
+        let next = previous.get(prev).unwrap();
+        if next.1 .0 != start {
+            open.push(next);
         }
-
-        current = previous.get(prev).unwrap();
     }
 
     grid.print(|p, c| {
