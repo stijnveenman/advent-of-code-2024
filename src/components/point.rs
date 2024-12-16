@@ -20,7 +20,9 @@ impl Point {
     pub const DOWN_RIGHT: Point = Point { x: 1, y: 1 };
     pub const DOWN_LEFT: Point = Point { x: -1, y: 1 };
 
-    pub const DIRECTIONS: [Point; 8] = [
+    pub const DIRECTIONS_4: [Point; 4] = [Self::RIGHT, Self::LEFT, Self::DOWN, Self::UP];
+
+    pub const DIRECTIONS_8: [Point; 8] = [
         Self::RIGHT,
         Self::LEFT,
         Self::DOWN,

@@ -16,7 +16,7 @@ pub fn part_one(input: &str) -> Option<u32> {
                 return None;
             }
 
-            let words = Point::DIRECTIONS
+            let words = Point::DIRECTIONS_8
                 .iter()
                 .filter_map(|direction| {
                     if grid

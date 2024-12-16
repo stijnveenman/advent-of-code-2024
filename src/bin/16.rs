@@ -1,4 +1,4 @@
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 use advent_of_code::{
     components::Point,
@@ -31,7 +31,7 @@ impl Ord for SearchPoint {
     }
 }
 
-pub fn dijkstra(grid: &CharGrid, start: Point, end: Point) -> Option<usize> {
+fn dijkstra(grid: &CharGrid, start: Point, end: Point) -> Option<usize> {
     let mut closed = HashMap::new();
     let mut open = BTreeSet::from([SearchPoint(0, start, Point::RIGHT)]);
 
@@ -72,17 +72,102 @@ pub fn dijkstra(grid: &CharGrid, start: Point, end: Point) -> Option<usize> {
     None
 }
 
+fn dijkstra2(grid: &CharGrid, start: Point, end: Point) -> Option<usize> {
+    let mut closed = HashMap::new();
+    let mut open = BTreeSet::from([SearchPoint(0, start, Point::RIGHT)]);
+    // For each next (point, distance) we can reach it for (distance, _) from (_, (point ,
+    // direction))
+    let mut previous: HashMap<(Point, Point), (usize, (Point, Point))> = HashMap::new();
+
+    while let Some(SearchPoint(distance, current, direction)) = open.pop_first() {
+        if closed
+            .get(&(current, direction))
+            .is_some_and(|prev_distance| *prev_distance < distance)
+        {
+            continue;
+        }
+
+        let next = [
+            SearchPoint(distance + 1, current + direction, direction),
+            SearchPoint(
+                distance + 1001, // Rotate and move
+                current + direction.rotate_right(),
+                direction.rotate_right(),
+            ),
+            SearchPoint(
+                distance + 1001, // Rotate and move
+                current + direction.rotate_left(),
+                direction.rotate_left(),
+            ),
+        ]
+        .into_iter()
+        .filter(|point| grid.in_bounds(&point.1))
+        .filter(|point| grid.get(&point.1).is_some_and(|c| c != '#'));
+
+        for n in next {
+            if let Some(prev_n) = previous.get(&(n.1, n.2)) {
+                if prev_n.0 > n.0 {
+                    // Improving prev
+                    previous.insert((n.1, n.2), (n.0, (current, direction)));
+                } else if prev_n.0 == n.0 && prev_n.1 != (current, direction) {
+                    // We should do something with this
+                    println!();
+                    dbg!("equal prev", prev_n.1, (current, direction));
+                }
+            } else {
+                previous.insert((n.1, n.2), (n.0, (current, direction)));
+            }
+
+            open.insert(n);
+        }
+
+        closed.insert((current, direction), distance);
+    }
+
+    let mut current = previous.get(&(end, Point::UP)).unwrap();
+    let mut visit_set = HashSet::from([end]);
+
+    loop {
+        let (_, prev) = current;
+
+        visit_set.insert(prev.0);
+
+        if prev.0 == start {
+            break;
+        }
+
+        current = previous.get(prev).unwrap();
+    }
+
+    grid.print(|p, c| {
+        if visit_set.contains(p) {
+            return "O".into();
+        }
+        match c {
+            Some('#') => "#".into(),
+            _ => " ".into(),
+        }
+    });
+
+    None
+}
+
 pub fn part_one(input: &str) -> Option<usize> {
     let grid = CharGrid::new(input);
     // MARKER special grid find points as we do this a lot
-    let start = grid.entries().find(|(p, c)| c == &'S').unwrap().0;
-    let end = grid.entries().find(|(p, c)| c == &'E').unwrap().0;
+    let start = grid.entries().find(|(_p, c)| c == &'S').unwrap().0;
+    let end = grid.entries().find(|(_p, c)| c == &'E').unwrap().0;
 
     dijkstra(&grid, start, end)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+pub fn part_two(input: &str) -> Option<usize> {
+    let grid = CharGrid::new(input);
+    // MARKER special grid find points as we do this a lot
+    let start = grid.entries().find(|(_p, c)| c == &'S').unwrap().0;
+    let end = grid.entries().find(|(_p, c)| c == &'E').unwrap().0;
+
+    dijkstra2(&grid, start, end)
 }
 
 #[cfg(test)]
@@ -98,6 +183,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(45));
     }
 }
