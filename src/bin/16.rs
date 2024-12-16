@@ -146,6 +146,7 @@ fn dijkstra2(grid: &CharGrid, start: Point, end: Point) -> Option<usize> {
     let mut open = best_end;
     let mut visit_set = HashSet::from([start, end]);
 
+    // Our dijkstra solve is fast, this backtracking is really slow and could be improved
     while let Some(current) = open.pop() {
         visit_set.insert(current.0);
 
