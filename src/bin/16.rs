@@ -77,7 +77,7 @@ fn dijkstra2(grid: &CharGrid, start: Point, end: Point) -> Option<usize> {
     let mut open = BTreeSet::from([SearchPoint(0, start, Point::RIGHT)]);
     // For each next (point, distance) we can reach it for (distance, _) from (_, (point ,
     // direction))
-    let mut previous: HashMap<(Point, Point), (usize, (Point, Point))> = HashMap::new();
+    let mut previous: HashMap<(Point, Point), (usize, Vec<(Point, Point)>)> = HashMap::new();
 
     while let Some(SearchPoint(distance, current, direction)) = open.pop_first() {
         if closed
@@ -108,14 +108,14 @@ fn dijkstra2(grid: &CharGrid, start: Point, end: Point) -> Option<usize> {
             if let Some(prev_n) = previous.get(&(n.1, n.2)) {
                 if prev_n.0 > n.0 {
                     // Improving prev
-                    previous.insert((n.1, n.2), (n.0, (current, direction)));
-                } else if prev_n.0 == n.0 && prev_n.1 != (current, direction) {
+                    previous.insert((n.1, n.2), (n.0, vec![(current, direction)]));
+                } else if prev_n.0 == n.0 {
                     // We should do something with this
                     println!();
-                    dbg!("equal prev", prev_n.1, (current, direction));
+                    // dbg!("equal prev", prev_n.1, (current, direction));
                 }
             } else {
-                previous.insert((n.1, n.2), (n.0, (current, direction)));
+                previous.insert((n.1, n.2), (n.0, vec![(current, direction)]));
             }
 
             open.insert(n);
@@ -124,18 +124,20 @@ fn dijkstra2(grid: &CharGrid, start: Point, end: Point) -> Option<usize> {
         closed.insert((current, direction), distance);
     }
 
-    let mut open = vec![previous.get(&(end, Point::UP)).unwrap()];
+    let mut open = previous.get(&(end, Point::UP)).unwrap().1.clone();
     let mut visit_set = HashSet::from([start, end]);
 
     while let Some(current) = open.pop() {
-        let (_, prev) = current;
+        visit_set.insert(current.0);
 
-        visit_set.insert(prev.0);
+        let next = previous
+            .get(&current)
+            .unwrap()
+            .1
+            .iter()
+            .filter(|p| p.0 != start);
 
-        let next = previous.get(prev).unwrap();
-        if next.1 .0 != start {
-            open.push(next);
-        }
+        open.extend(next);
     }
 
     grid.print(|p, c| {
