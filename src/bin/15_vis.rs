@@ -291,38 +291,3 @@ pub fn part_two(input: &str) -> Option<usize> {
 
     Some(result)
 }
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-
-    #[test]
-    fn part2_example() {
-        let input = "#######
-#...#.#
-#.....#
-#..OO@#
-#..O..#
-#.....#
-#######
-
-<vv<<^^<<^^";
-
-        let result = part_two(input);
-
-        assert_eq!(result, Some(618));
-    }
-
-    #[test]
-    fn test_part_one() {
-        let result = part_one(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, Some(10092));
-    }
-
-    #[test]
-    fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, Some(9021));
-    }
-}
