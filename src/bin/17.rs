@@ -2,9 +2,11 @@ use core::panic;
 
 use advent_of_code::AocItertools;
 use itertools::Itertools;
+use rayon::iter::{ParallelBridge, ParallelIterator};
 
 advent_of_code::solution!(17);
 
+#[derive(Clone)]
 struct Computer {
     opcodes: Vec<u32>,
     pc: u32,
@@ -42,6 +44,10 @@ impl From<&str> for Computer {
 }
 
 impl Computer {
+    fn output(&self) -> String {
+        self.out.iter().map(|u| u.to_string()).join(",")
+    }
+
     fn run(&mut self) {
         while self.pc < self.opcodes.len() as u32 {
             let opcode = self.opcodes[self.pc as usize];
@@ -108,11 +114,23 @@ pub fn part_one(input: &str) -> Option<String> {
 
     computer.run();
 
-    Some(computer.out.iter().map(|u| u.to_string()).join(","))
+    Some(computer.output())
 }
 
-pub fn part_two(input: &str) -> Option<String> {
-    None
+pub fn part_two(input: &str) -> Option<u32> {
+    let computer: Computer = input.into();
+
+    let program = computer.opcodes.iter().map(|i| i.to_string()).join(",");
+
+    (0..u32::MAX).find(|p| {
+        let mut computer = computer.clone();
+        computer.a = *p;
+
+        computer.run();
+
+        println!("{}", computer.output());
+        computer.output() == program
+    })
 }
 
 #[cfg(test)]
@@ -127,8 +145,15 @@ mod tests {
 
     #[test]
     fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        let result = part_two(
+            "Register A: 2024
+Register B: 0
+Register C: 0
+
+Program: 0,3,5,4,3,0
+",
+        );
+        assert_eq!(result, Some(117440));
     }
 
     #[test]
