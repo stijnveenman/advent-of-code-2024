@@ -17,6 +17,10 @@ impl Computer {
             let opcode = self.opcodes[self.pc as usize];
 
             match opcode {
+                0 => {
+                    self.a /= 2u32.pow(self.combo());
+                    self.pc += 2;
+                }
                 1 => {
                     self.b ^= self.literal();
                     self.pc += 2;
@@ -25,12 +29,27 @@ impl Computer {
                     self.b = self.combo() % 8;
                     self.pc += 2;
                 }
+                3 => {
+                    if self.a == 0 {
+                        self.pc += 2;
+                    } else {
+                        self.pc = self.literal();
+                    }
+                }
                 4 => {
                     self.b ^= self.c;
                     self.pc += 2;
                 }
                 5 => {
                     self.out.push(self.combo() % 8);
+                    self.pc += 2;
+                }
+                6 => {
+                    self.b = self.a / 2u32.pow(self.combo());
+                    self.pc += 2;
+                }
+                7 => {
+                    self.c = self.a / 2u32.pow(self.combo());
                     self.pc += 2;
                 }
                 a => panic!("unknown opcode {}", a),
