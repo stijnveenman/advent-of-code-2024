@@ -15,11 +15,22 @@ impl Computer {
     fn run(&mut self) {
         while self.pc < self.opcodes.len() as u32 {
             let opcode = self.opcodes[self.pc as usize];
-            let operand = self.read_operand();
 
             match opcode {
+                1 => {
+                    self.b ^= self.literal();
+                    self.pc += 2;
+                }
                 2 => {
-                    self.b = operand % 8;
+                    self.b = self.combo() % 8;
+                    self.pc += 2;
+                }
+                4 => {
+                    self.b ^= self.c;
+                    self.pc += 2;
+                }
+                5 => {
+                    self.out.push(self.combo() % 8);
                     self.pc += 2;
                 }
                 a => panic!("unknown opcode {}", a),
@@ -27,7 +38,7 @@ impl Computer {
         }
     }
 
-    fn read_operand(&self) -> u32 {
+    fn combo(&self) -> u32 {
         let operand = self.opcodes[self.pc as usize + 1];
         match operand {
             a if a <= 3 => a,
@@ -36,6 +47,10 @@ impl Computer {
             6 => self.c,
             a => panic!("unknown operand {}", a),
         }
+    }
+
+    fn literal(&self) -> u32 {
+        self.opcodes[self.pc as usize + 1]
     }
 }
 
