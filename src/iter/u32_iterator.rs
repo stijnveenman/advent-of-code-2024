@@ -11,7 +11,7 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         let r = self.i.next()?;
 
-        match r.parse::<u32>() {
+        match r.trim().parse::<u32>() {
             Ok(v) => Some(v),
             Err(e) => panic!("failed to parse u32 for [{}]: {}", r, e),
         }

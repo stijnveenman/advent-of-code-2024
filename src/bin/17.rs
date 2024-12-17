@@ -1,5 +1,8 @@
 use core::panic;
 
+use advent_of_code::AocItertools;
+use itertools::Itertools;
+
 advent_of_code::solution!(17);
 
 struct Computer {
@@ -9,6 +12,33 @@ struct Computer {
     b: u32,
     c: u32,
     out: Vec<u32>,
+}
+
+impl From<&str> for Computer {
+    fn from(value: &str) -> Self {
+        let (registers, program) = value.split_once("\n\n").unwrap();
+
+        let program = program
+            .split_once(": ")
+            .unwrap()
+            .1
+            .split(",")
+            .u32()
+            .collect_vec();
+
+        let mut registers = registers
+            .lines()
+            .map(|l| l.split_once(": ").unwrap().1.parse::<u32>().unwrap());
+
+        Computer {
+            opcodes: program,
+            pc: 0,
+            a: registers.next().unwrap(),
+            b: registers.next().unwrap(),
+            c: registers.next().unwrap(),
+            out: vec![],
+        }
+    }
 }
 
 impl Computer {
@@ -74,7 +104,11 @@ impl Computer {
 }
 
 pub fn part_one(input: &str) -> Option<String> {
-    None
+    let mut computer: Computer = input.into();
+
+    computer.run();
+
+    Some(computer.out.iter().map(|u| u.to_string()).join(","))
 }
 
 pub fn part_two(input: &str) -> Option<String> {
