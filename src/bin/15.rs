@@ -1,10 +1,8 @@
 use core::panic;
-use std::usize;
 
 use advent_of_code::{
     components::Point,
     grid::{char_grid::CharGrid, hash_grid::HashGrid, Grid},
-    AocItertools,
 };
 use itertools::Itertools;
 
