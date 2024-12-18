@@ -2,7 +2,6 @@ use core::panic;
 
 use advent_of_code::AocItertools;
 use itertools::Itertools;
-use rayon::iter::{ParallelBridge, ParallelIterator};
 
 advent_of_code::solution!(17);
 
@@ -49,8 +48,8 @@ impl Computer {
     }
 
     fn run(&mut self) {
-        while self.pc < self.opcodes.len() as usize {
-            let opcode = self.opcodes[self.pc as usize];
+        while self.pc < self.opcodes.len() {
+            let opcode = self.opcodes[self.pc];
 
             match opcode {
                 0 => {
@@ -94,7 +93,7 @@ impl Computer {
     }
 
     fn combo(&self) -> usize {
-        let operand = self.opcodes[self.pc as usize + 1];
+        let operand = self.opcodes[self.pc + 1];
         match operand {
             a if a <= 3 => a,
             4 => self.a,
@@ -105,7 +104,7 @@ impl Computer {
     }
 
     fn literal(&self) -> usize {
-        self.opcodes[self.pc as usize + 1]
+        self.opcodes[self.pc + 1]
     }
 }
 
@@ -115,6 +114,18 @@ pub fn part_one(input: &str) -> Option<String> {
     computer.run();
 
     Some(computer.output())
+}
+
+fn compare_correct(actual: &[usize], expected: &[usize]) -> usize {
+    assert_eq!(actual.len(), expected.len());
+
+    for i in 0..expected.len() {
+        if expected[expected.len() - 1 - i] != actual[actual.len() - 1 - i] {
+            return i;
+        }
+    }
+
+    actual.len()
 }
 
 pub fn part_two(input: &str) -> Option<usize> {
@@ -129,7 +140,7 @@ pub fn part_two(input: &str) -> Option<usize> {
 
         computer.run();
 
-        println!("{}", computer.output());
+        // println!("{}", computer.output());
         if computer.out == computer.opcodes {
             return Some(i);
         }
@@ -140,11 +151,14 @@ pub fn part_two(input: &str) -> Option<usize> {
 
         if computer.out.len() != computer.opcodes.len() {
             i *= 2;
+        } else {
+            let correct = compare_correct(&computer.opcodes, &computer.out);
+            let remaining = computer.opcodes.len() - correct;
+            // keep taking smaller steps towards the output
+            if remaining > 5 {
+                i += 10usize.pow(remaining as u32 - 5);
+            }
         }
-
-        // if computer.out.iter().nth(2) != computer.opcodes.iter().rev().nth(2) {
-        //     i += 200000000;
-        // }
 
         i += 1;
     }
