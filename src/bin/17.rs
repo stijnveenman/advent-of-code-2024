@@ -8,12 +8,12 @@ advent_of_code::solution!(17);
 
 #[derive(Clone)]
 struct Computer {
-    opcodes: Vec<u32>,
-    pc: u32,
-    a: u32,
-    b: u32,
-    c: u32,
-    out: Vec<u32>,
+    opcodes: Vec<usize>,
+    pc: usize,
+    a: usize,
+    b: usize,
+    c: usize,
+    out: Vec<usize>,
 }
 
 impl From<&str> for Computer {
@@ -25,12 +25,12 @@ impl From<&str> for Computer {
             .unwrap()
             .1
             .split(",")
-            .u32()
+            .usize()
             .collect_vec();
 
         let mut registers = registers
             .lines()
-            .map(|l| l.split_once(": ").unwrap().1.parse::<u32>().unwrap());
+            .map(|l| l.split_once(": ").unwrap().1.parse::<usize>().unwrap());
 
         Computer {
             opcodes: program,
@@ -49,12 +49,12 @@ impl Computer {
     }
 
     fn run(&mut self) {
-        while self.pc < self.opcodes.len() as u32 {
+        while self.pc < self.opcodes.len() as usize {
             let opcode = self.opcodes[self.pc as usize];
 
             match opcode {
                 0 => {
-                    self.a /= 2u32.pow(self.combo());
+                    self.a /= 2usize.pow(self.combo() as u32);
                     self.pc += 2;
                 }
                 1 => {
@@ -81,11 +81,11 @@ impl Computer {
                     self.pc += 2;
                 }
                 6 => {
-                    self.b = self.a / 2u32.pow(self.combo());
+                    self.b = self.a / 2usize.pow(self.combo() as u32);
                     self.pc += 2;
                 }
                 7 => {
-                    self.c = self.a / 2u32.pow(self.combo());
+                    self.c = self.a / 2usize.pow(self.combo() as u32);
                     self.pc += 2;
                 }
                 a => panic!("unknown opcode {}", a),
@@ -93,7 +93,7 @@ impl Computer {
         }
     }
 
-    fn combo(&self) -> u32 {
+    fn combo(&self) -> usize {
         let operand = self.opcodes[self.pc as usize + 1];
         match operand {
             a if a <= 3 => a,
@@ -104,7 +104,7 @@ impl Computer {
         }
     }
 
-    fn literal(&self) -> u32 {
+    fn literal(&self) -> usize {
         self.opcodes[self.pc as usize + 1]
     }
 }
@@ -117,20 +117,37 @@ pub fn part_one(input: &str) -> Option<String> {
     Some(computer.output())
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
+pub fn part_two(input: &str) -> Option<usize> {
     let computer: Computer = input.into();
 
-    let program = computer.opcodes.iter().map(|i| i.to_string()).join(",");
+    let mut i = 0;
+    let mut prev_length = 0;
 
-    (0..u32::MAX).find(|p| {
+    loop {
         let mut computer = computer.clone();
-        computer.a = *p;
+        computer.a = i;
 
         computer.run();
 
         println!("{}", computer.output());
-        computer.output() == program
-    })
+        if computer.out == computer.opcodes {
+            return Some(i);
+        }
+
+        if prev_length == 0 {
+            prev_length = computer.out.len();
+        }
+
+        if computer.out.len() != computer.opcodes.len() {
+            i *= 2;
+        }
+
+        // if computer.out.iter().nth(2) != computer.opcodes.iter().rev().nth(2) {
+        //     i += 200000000;
+        // }
+
+        i += 1;
+    }
 }
 
 #[cfg(test)]

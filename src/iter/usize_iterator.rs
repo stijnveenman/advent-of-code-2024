@@ -11,7 +11,7 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         let r = self.i.next()?;
 
-        match r.parse::<usize>() {
+        match r.trim().parse::<usize>() {
             Ok(v) => Some(v),
             Err(e) => panic!("failed to parse usize for [{}]: {}", r, e),
         }
