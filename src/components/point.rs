@@ -169,6 +169,22 @@ impl Point {
 
         v
     }
+
+    /// Calculates the distance of a point to another point, now allowing for any diagonal moves
+    ///
+    /// # Examples
+    /// ```
+    /// use advent_of_code::components::Point;
+    /// assert_eq!(Point::new(5,0).distance(&Point::new(10, 0)), 5);
+    /// assert_eq!(Point::new(10,0).distance(&Point::new(5, 0)), 5);
+    /// assert_eq!(Point::new(10,0).distance(&Point::new(5, 5)), 10);
+    /// assert_eq!(Point::new(-5,0).distance(&Point::new(5, 0)), 10);
+    /// assert_eq!(Point::new(5,0).distance(&Point::new(-5, 0)), 10);
+    /// ````
+    pub fn distance(&self, rhs: &Point) -> usize {
+        let distance = *self - *rhs;
+        (distance.x.abs() + distance.y.abs()) as usize
+    }
 }
 
 impl AddAssign<Point> for Point {
