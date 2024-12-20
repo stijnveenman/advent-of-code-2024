@@ -56,8 +56,15 @@ pub fn part_one(input: &str) -> Option<usize> {
     solve_one(input, 100)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
+fn solve_two(input: &str, min_cheat: usize) -> Option<usize> {
+    let grid = CharGrid::new(input);
+    let path = find_path(&grid);
+
     None
+}
+
+pub fn part_two(input: &str) -> Option<usize> {
+    solve_two(input, 100)
 }
 
 #[cfg(test)]
@@ -72,7 +79,7 @@ mod tests {
 
     #[test]
     fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        let result = solve_two(&advent_of_code::template::read_file("examples", DAY), 50);
+        assert_eq!(result, Some(285));
     }
 }
