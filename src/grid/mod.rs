@@ -33,6 +33,11 @@ pub trait Grid<'a> {
     /// Returns a tuple of the point and value for the entire grid
     fn entries(&'a self) -> impl Iterator<Item = (Point, Self::ReturnItem)>;
 
+    /// Takes a Fn over Grid::ReturnItem to find a point based on its value
+    fn find_by_value<FindFn: Fn(&Self::ReturnItem) -> bool>(&'a self, f: FindFn) -> Option<Point> {
+        self.entries().find(|(_p, v)| f(v)).map(|p| p.0)
+    }
+
     /// Draw a visual representation of the grid
     fn draw<DrawFn: Fn(&Point, Option<Self::ReturnItem>) -> String>(
         &'a self,
