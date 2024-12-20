@@ -1,13 +1,39 @@
-use advent_of_code::grid::{char_grid::CharGrid, Grid};
+use std::collections::HashMap;
+
+use advent_of_code::{
+    components::Point,
+    grid::{char_grid::CharGrid, Grid},
+};
 
 advent_of_code::solution!(20);
 
-fn solve_one(input: &str, min_cheat: usize) -> Option<u32> {
-    let grid = CharGrid::new(input);
-    let start = grid.find_by_value(|v| *v == 'S').unwrap();
+fn find_path(grid: &CharGrid) -> HashMap<Point, usize> {
+    let mut current = grid.find_by_value(|v| *v == 'S').unwrap();
     let end = grid.find_by_value(|v| *v == 'E').unwrap();
 
-    dbg!(start, end);
+    let mut index = 1;
+    let mut m = HashMap::new();
+    m.insert(current, 0);
+
+    while current != end {
+        let next = current
+            .neighbours()
+            .into_iter()
+            .filter(|m| grid.get(m).is_some_and(|c| c != '#'))
+            .find(|p| !m.contains_key(p))
+            .unwrap();
+
+        m.insert(next, index);
+        current = next;
+        index += 1;
+    }
+
+    m
+}
+
+fn solve_one(input: &str, min_cheat: usize) -> Option<u32> {
+    let grid = CharGrid::new(input);
+    let path = find_path(&grid);
 
     None
 }
