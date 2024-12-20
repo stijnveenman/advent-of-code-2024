@@ -3,7 +3,9 @@ use std::collections::HashMap;
 use advent_of_code::{
     components::Point,
     grid::{char_grid::CharGrid, Grid},
+    AocItertools,
 };
+use itertools::Itertools;
 
 advent_of_code::solution!(20);
 
@@ -31,14 +33,26 @@ fn find_path(grid: &CharGrid) -> HashMap<Point, usize> {
     m
 }
 
-fn solve_one(input: &str, min_cheat: usize) -> Option<u32> {
+fn solve_one(input: &str, min_cheat: usize) -> Option<usize> {
     let grid = CharGrid::new(input);
     let path = find_path(&grid);
 
-    None
+    let cheats = path
+        .iter()
+        .flat_map(|(point, current_pos)| {
+            Point::DIRECTIONS_4
+                .iter()
+                .filter_map(|dir| path.get(&(*point + (*dir * 2))))
+                .filter(|cheat_pos| *cheat_pos > current_pos)
+                .map(|cheat_pos| *cheat_pos - *current_pos - 2)
+        })
+        .filter(|cheat| *cheat >= min_cheat)
+        .count();
+
+    Some(cheats)
 }
 
-pub fn part_one(input: &str) -> Option<u32> {
+pub fn part_one(input: &str) -> Option<usize> {
     solve_one(input, 100)
 }
 
@@ -53,7 +67,7 @@ mod tests {
     #[test]
     fn test_part_one() {
         let result = solve_one(&advent_of_code::template::read_file("examples", DAY), 20);
-        assert_eq!(result, Some(6));
+        assert_eq!(result, Some(5));
     }
 
     #[test]
