@@ -3,9 +3,7 @@ use std::collections::HashMap;
 use advent_of_code::{
     components::Point,
     grid::{char_grid::CharGrid, Grid},
-    AocItertools,
 };
-use itertools::Itertools;
 
 advent_of_code::solution!(20);
 
@@ -60,7 +58,18 @@ fn solve_two(input: &str, min_cheat: usize) -> Option<usize> {
     let grid = CharGrid::new(input);
     let path = find_path(&grid);
 
-    None
+    let cheats = path
+        .iter()
+        .flat_map(|(start, start_pos)| {
+            path.iter()
+                .filter(|(end, _)| start.distance(end) <= 20)
+                .filter(move |(_, end_pos)| end_pos > &start_pos)
+                .map(move |(end, end_pos)| end_pos - start_pos - start.distance(end))
+        })
+        .filter(|cheat| *cheat >= min_cheat)
+        .count();
+
+    Some(cheats)
 }
 
 pub fn part_two(input: &str) -> Option<usize> {
