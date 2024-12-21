@@ -1,4 +1,4 @@
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{hash_map::Entry, BTreeSet, HashMap};
 
 use crate::{components::Point, grid::Grid};
 
@@ -45,10 +45,11 @@ pub fn dijkstra<'a, T: Grid<'a>, CostFn: Fn(&Point, Option<T::ReturnItem>) -> Op
     start: Point,
     end: Point,
     cost_fn: CostFn,
-) -> Option<usize> {
+) -> Option<Vec<(usize, Point)>> {
     // 1
     let mut closed = HashMap::new();
     let mut open = BTreeSet::from([PointWithDistance(0, start)]);
+    let mut previous: HashMap<Point, (usize, Point)> = HashMap::new();
 
     // 2
     while let Some(PointWithDistance(distance, current)) = open.pop_first() {
@@ -74,16 +75,46 @@ pub fn dijkstra<'a, T: Grid<'a>, CostFn: Fn(&Point, Option<T::ReturnItem>) -> Op
             });
 
         // 5
-        open.extend(next);
+        for n in next {
+            match previous.entry(n.1) {
+                Entry::Occupied(entry) => {
+                    let prev = entry.get();
+                    if distance < prev.0 {
+                        previous.insert(n.1, (n.0, current));
+                    };
+                }
+                Entry::Vacant(entry) => {
+                    entry.insert((n.0, current));
+                }
+            };
+
+            open.insert(n);
+        }
         closed.insert(current, distance);
 
         // 6
         if current == end {
-            return Some(distance);
+            break;
         }
     }
 
-    None
+    if !previous.contains_key(&end) {
+        return None;
+    }
+
+    let mut path = vec![previous.get(&end).unwrap().to_owned()];
+    let mut current = end;
+
+    while current != start {
+        let next = previous.get(&current).unwrap();
+
+        path.push(next.to_owned());
+
+        current = next.1;
+    }
+    path.reverse();
+
+    Some(path)
 }
 
 #[cfg(test)]
@@ -115,7 +146,32 @@ mod test {
             },
         );
 
-        assert_eq!(result, Some(8));
+        assert_eq!(result.map(|v| v.last().unwrap().0), Some(8));
+    }
+
+    #[rstest]
+    fn should_return_none_when_no_path_is_possible() {
+        let input = "
+.....
+----.
+..-..
+.----
+.....
+";
+        let grid = CharGrid::new(input);
+
+        let result = dijkstra(
+            &grid,
+            Point::new(0, 0),
+            grid.bounds().1,
+            |_point, char| match char {
+                None => None,
+                Some('.') => Some(1),
+                Some(_) => None,
+            },
+        );
+
+        assert_eq!(result, None);
     }
 
     #[rstest]
@@ -155,7 +211,7 @@ mod test {
             },
         );
 
-        assert_eq!(result, Some(48));
+        assert_eq!(result.map(|v| v.last().unwrap().0), Some(48));
     }
 
     #[rstest]
@@ -183,7 +239,7 @@ mod test {
             },
         );
 
-        assert_eq!(result, Some(19));
+        assert_eq!(result.map(|v| v.last().unwrap().0), Some(19));
     }
     // TODO add a maze with different cost characters
 }
