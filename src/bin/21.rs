@@ -48,28 +48,33 @@ fn direction_keypad() -> Pad {
 fn move_pad(pad: &Pad, from: char, to: char) -> Vec<char> {
     if from == to {
         // i think sometimes we might need A here
-        return vec![];
+        return vec!['A'];
     }
-    let start = pad.find_by_value(&from).unwrap();
+    let mut current = pad.find_by_value(&from).unwrap();
     let end = pad.find_by_value(&to).unwrap();
-    let path = dijkstra(pad, start, end, |_, _| Some(1)).unwrap();
+    let mut path = vec![];
 
-    let mut path = path
-        .iter()
-        .zip(path.iter().skip(1))
-        .map(|(current, next)| {
-            let dir = next.1 - current.1;
+    while current != end {
+        let distance = current.distance(&end);
 
-            match dir {
-                Point::UP => '^',
-                Point::DOWN => 'V',
-                Point::LEFT => '<',
-                Point::RIGHT => '>',
+        let dir = Point::DIRECTIONS_4
+            .into_iter()
+            .find(|d| {
+                let next = current + *d;
+                next.distance(&end) < distance
+            })
+            .unwrap();
 
-                s => panic!("not a valid dir {}", s),
-            }
-        })
-        .collect_vec();
+        current += dir;
+
+        path.push(match dir {
+            Point::UP => '^',
+            Point::DOWN => 'V',
+            Point::RIGHT => '>',
+            Point::LEFT => '<',
+            _ => panic!(),
+        });
+    }
 
     path.push('A');
     path
