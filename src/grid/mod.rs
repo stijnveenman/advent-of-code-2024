@@ -34,8 +34,16 @@ pub trait Grid<'a> {
     fn entries(&'a self) -> impl Iterator<Item = (Point, Self::ReturnItem)>;
 
     /// Takes a Fn over Grid::ReturnItem to find a point based on its value
-    fn find_by_value<FindFn: Fn(&Self::ReturnItem) -> bool>(&'a self, f: FindFn) -> Option<Point> {
+    fn find<FindFn: Fn(&Self::ReturnItem) -> bool>(&'a self, f: FindFn) -> Option<Point> {
         self.entries().find(|(_p, v)| f(v)).map(|p| p.0)
+    }
+
+    /// Takes a Fn over Grid::ReturnItem to find a point based on its value
+    fn find_by_value(&'a self, f: Self::ReturnItem) -> Option<Point>
+    where
+        <Self as Grid<'a>>::ReturnItem: std::cmp::PartialEq,
+    {
+        self.entries().find(|(_p, v)| v == &f).map(|p| p.0)
     }
 
     /// Draw a visual representation of the grid

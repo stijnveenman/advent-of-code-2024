@@ -8,8 +8,8 @@ use advent_of_code::{
 advent_of_code::solution!(20);
 
 fn find_path(grid: &CharGrid) -> HashMap<Point, usize> {
-    let mut current = grid.find_by_value(|v| *v == 'S').unwrap();
-    let end = grid.find_by_value(|v| *v == 'E').unwrap();
+    let mut current = grid.find(|v| *v == 'S').unwrap();
+    let end = grid.find(|v| *v == 'E').unwrap();
 
     let mut index = 1;
     let mut m = HashMap::new();

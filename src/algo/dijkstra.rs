@@ -102,16 +102,17 @@ pub fn dijkstra<'a, T: Grid<'a>, CostFn: Fn(&Point, Option<T::ReturnItem>) -> Op
         return None;
     }
 
-    let mut path = vec![previous.get(&end).unwrap().to_owned()];
+    let mut path = vec![];
     let mut current = end;
 
     while current != start {
         let next = previous.get(&current).unwrap();
 
-        path.push(next.to_owned());
+        path.push((next.0, current));
 
         current = next.1;
     }
+    path.push((0, start));
     path.reverse();
 
     Some(path)

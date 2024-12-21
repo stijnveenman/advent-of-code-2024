@@ -1,4 +1,8 @@
+use core::panic;
+use std::fs::create_dir;
+
 use advent_of_code::{
+    algo::dijkstra::dijkstra,
     components::Point,
     grid::{hash_grid::HashGrid, Grid},
 };
@@ -6,7 +10,8 @@ use itertools::Itertools;
 
 advent_of_code::solution!(21);
 
-fn numpad() -> HashGrid<'static, char> {
+type Pad = HashGrid<'static, char>;
+fn numpad() -> Pad {
     let mut grid = HashGrid::new();
 
     grid.set(&Point::new(0, 0), '7');
@@ -27,7 +32,7 @@ fn numpad() -> HashGrid<'static, char> {
     grid
 }
 
-fn direction_keypad() -> HashGrid<'static, char> {
+fn direction_keypad() -> Pad {
     let mut grid = HashGrid::new();
 
     grid.set(&Point::new(1, 0), '^');
@@ -40,9 +45,57 @@ fn direction_keypad() -> HashGrid<'static, char> {
     grid
 }
 
+fn move_pad(pad: &Pad, from: char, to: char) -> Vec<char> {
+    let start = pad.find_by_value(&from).unwrap();
+    let end = pad.find_by_value(&to).unwrap();
+    let path = dijkstra(pad, start, end, |_, _| Some(1)).unwrap();
+
+    let mut path = path
+        .iter()
+        .zip(path.iter().skip(1))
+        .map(|(current, next)| {
+            let dir = next.1 - current.1;
+
+            match dir {
+                Point::UP => '^',
+                Point::DOWN => 'V',
+                Point::LEFT => '<',
+                Point::RIGHT => '>',
+
+                s => panic!("not a valid dir {}", s),
+            }
+        })
+        .collect_vec();
+
+    //path is the path keypad has to press for each char. it also has to press a after
+    path.push('A');
+    path
+}
+
+fn solve_number(number: &str) {
+    let numpad = numpad();
+    let keypad = direction_keypad();
+
+    let mut keypad_pos = 'A';
+    for c in number.chars() {
+        let path = move_pad(&numpad, keypad_pos, c);
+        keypad_pos = c;
+        dbg!(path);
+    }
+}
+
 pub fn part_one(input: &str) -> Option<u32> {
     let numbers = input.lines().collect_vec();
 
+    let result = numbers
+        .into_iter()
+        .take(1)
+        .map(|number| {
+            solve_number(number);
+        })
+        .collect_vec();
+
+    dbg!(result);
     None
 }
 
