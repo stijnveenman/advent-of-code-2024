@@ -46,6 +46,10 @@ fn direction_keypad() -> Pad {
 }
 
 fn move_pad(pad: &Pad, from: char, to: char) -> Vec<char> {
+    if from == to {
+        // i think sometimes we might need A here
+        return vec![];
+    }
     let start = pad.find_by_value(&from).unwrap();
     let end = pad.find_by_value(&to).unwrap();
     let path = dijkstra(pad, start, end, |_, _| Some(1)).unwrap();
@@ -67,21 +71,46 @@ fn move_pad(pad: &Pad, from: char, to: char) -> Vec<char> {
         })
         .collect_vec();
 
-    //path is the path keypad has to press for each char. it also has to press a after
     path.push('A');
     path
 }
 
-fn solve_number(number: &str) {
-    let numpad = numpad();
-    let keypad = direction_keypad();
+struct Robot {
+    pos: char,
+    pad: Pad,
+}
 
-    let mut keypad_pos = 'A';
-    for c in number.chars() {
-        let path = move_pad(&numpad, keypad_pos, c);
-        keypad_pos = c;
-        dbg!(path);
+impl Robot {
+    fn new(pad: Pad) -> Robot {
+        Robot { pos: 'A', pad }
     }
+
+    fn press(&mut self, to: char) -> Vec<char> {
+        let path = move_pad(&self.pad, self.pos, to);
+        self.pos = to;
+        path
+    }
+}
+
+fn solve_number(number: &str) {
+    let mut r1 = Robot::new(numpad());
+    let mut r2 = Robot::new(direction_keypad());
+    let mut r3 = Robot::new(direction_keypad());
+
+    let path = number
+        .chars()
+        .flat_map(|c| {
+            let path = r1.press(c);
+
+            let path = path.into_iter().flat_map(|c| r2.press(c)).collect_vec();
+
+            let path = path.into_iter().flat_map(|c| r3.press(c)).collect_vec();
+            dbg!(&path);
+            path
+        })
+        .collect_vec();
+
+    dbg!(path.iter().join(""));
 }
 
 pub fn part_one(input: &str) -> Option<u32> {
