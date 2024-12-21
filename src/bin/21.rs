@@ -5,6 +5,7 @@ use advent_of_code::{
     algo::dijkstra::dijkstra,
     components::Point,
     grid::{hash_grid::HashGrid, Grid},
+    AocItertools,
 };
 use itertools::Itertools;
 
@@ -59,6 +60,7 @@ fn move_pad(pad: &Pad, from: char, to: char) -> Vec<char> {
 
         let dir = Point::DIRECTIONS_4
             .into_iter()
+            .filter(|d| pad.contains(&(current + *d)))
             .find(|d| {
                 let next = current + *d;
                 next.distance(&end) < distance
@@ -97,7 +99,7 @@ impl Robot {
     }
 }
 
-fn solve_number(number: &str) {
+fn solve_number(number: &str) -> usize {
     let mut r1 = Robot::new(numpad());
     let mut r2 = Robot::new(direction_keypad());
     let mut r3 = Robot::new(direction_keypad());
@@ -110,27 +112,29 @@ fn solve_number(number: &str) {
             let path = path.into_iter().flat_map(|c| r2.press(c)).collect_vec();
 
             let path = path.into_iter().flat_map(|c| r3.press(c)).collect_vec();
-            dbg!(&path);
+            // dbg!(&path);
             path
         })
         .collect_vec();
 
-    dbg!(path.iter().join(""));
+    let a = path.iter().join("");
+    println!("{}: {}", number, a);
+
+    path.len()
 }
 
-pub fn part_one(input: &str) -> Option<u32> {
+pub fn part_one(input: &str) -> Option<usize> {
     let numbers = input.lines().collect_vec();
 
     let result = numbers
         .into_iter()
-        .take(1)
-        .map(|number| {
-            solve_number(number);
-        })
-        .collect_vec();
+        .map(|number| (solve_number(number), number))
+        .map(|(length, number)| number[..number.len() - 1].parse::<usize>().unwrap() * length)
+        .sum();
 
     dbg!(result);
-    None
+
+    Some(result)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
