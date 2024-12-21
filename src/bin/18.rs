@@ -29,6 +29,7 @@ fn solve_part1(input: &str, size: Point, take: usize) -> Option<usize> {
         Some(true) => None,
         _ => Some(1),
     })
+    .map(|v| v.last().unwrap().0)
 }
 
 pub fn part_one(input: &str) -> Option<usize> {
