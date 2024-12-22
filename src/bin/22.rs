@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use advent_of_code::AocItertools;
 use itertools::Itertools;
 
@@ -49,34 +51,38 @@ fn price(number: isize) -> isize {
 pub fn part_two(input: &str) -> Option<isize> {
     let input = input.lines().usize().map(|v| v as isize).collect_vec();
 
-    let result = input
-        .into_iter()
-        .map(|secret| {
-            let mut changes = [0isize; 2000];
+    // HashMap of a sequence, to a HashMap of secret and sell sell_points
+    // This tells for any sequence, at what point each secret finds it first sell point
+    let mut sell_points: HashMap<Vec<isize>, HashMap<isize, isize>> = HashMap::new();
 
-            let mut current = secret;
-            let mut previous_price = price(secret);
-            (0..2000).for_each(|i| {
-                current = evolve(current);
+    input.into_iter().for_each(|secret| {
+        let mut changes = [0isize; 2000];
 
-                let price = price(current);
+        let mut current = secret;
+        let mut previous_price = price(secret);
+        (0..2000).for_each(|i| {
+            current = evolve(current);
 
-                changes[i] = price - previous_price;
-                previous_price = price;
+            let price = price(current);
 
-                if i < 4 {
-                    return;
-                }
+            changes[i] = price - previous_price;
+            previous_price = price;
 
-                let sequence = &changes[i - 4..i];
-                dbg!(sequence);
-            });
+            if i < 3 {
+                return;
+            }
 
-            current
-        })
-        .sum();
+            let sequence = &changes[i - 3..=i];
 
-    Some(result)
+            let sequence_points = sell_points.entry(sequence.to_vec()).or_default();
+            sequence_points.entry(secret).or_insert(price);
+        });
+    });
+
+    sell_points
+        .values()
+        .map(|v| v.values().sum::<isize>())
+        .max()
 }
 
 #[cfg(test)]
@@ -91,7 +97,12 @@ mod tests {
 
     #[test]
     fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
+        let result = part_two(
+            "1
+2
+3
+2024",
+        );
         assert_eq!(result, Some(23));
     }
 
