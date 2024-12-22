@@ -68,15 +68,21 @@ fn move_pad(robots: &mut [char; ROBOT_COUNT], index: usize, to: char) -> Vec<cha
     let left = diff.x.min(0);
     let right = diff.x.max(0);
 
-    let mut path = repeat_n('>', right.unsigned_abs())
+    let path = repeat_n('>', right.unsigned_abs())
         .chain(repeat_n('^', up.unsigned_abs()))
         .chain(repeat_n('v', down.unsigned_abs()))
         .chain(repeat_n('<', left.unsigned_abs()))
+        .chain(repeat_n('A', 1))
         .collect_vec();
 
-    path.push('A');
     robots[index] = to;
-    path
+    if index + 1 == ROBOT_COUNT {
+        return path;
+    }
+
+    path.into_iter()
+        .flat_map(|c| move_pad(robots, index + 1, c))
+        .collect_vec()
 }
 
 fn solve_number(number: &str) -> usize {
@@ -84,21 +90,7 @@ fn solve_number(number: &str) -> usize {
 
     let path = number
         .chars()
-        .flat_map(|c| {
-            let path = move_pad(&mut robots, 0, c);
-
-            let path = path
-                .into_iter()
-                .flat_map(|c| move_pad(&mut robots, 1, c))
-                .collect_vec();
-
-            let path = path
-                .into_iter()
-                .flat_map(|c| move_pad(&mut robots, 2, c))
-                .collect_vec();
-            // dbg!(&path);
-            path
-        })
+        .flat_map(|c| move_pad(&mut robots, 0, c))
         .collect_vec();
 
     let a = path.iter().join("");
