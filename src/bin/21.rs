@@ -63,26 +63,46 @@ fn move_pad(robots: &mut [char; ROBOT_COUNT], index: usize, to: char) -> Vec<cha
 
     let diff = end - current;
 
-    let up = diff.y.min(0);
-    let down = diff.y.max(0);
-    let left = diff.x.min(0);
-    let right = diff.x.max(0);
+    let x_char = if diff.x >= 0 { '>' } else { '<' };
+    let y_char = if diff.y >= 0 { 'v' } else { '^' };
 
-    let path = repeat_n('>', right.unsigned_abs())
-        .chain(repeat_n('^', up.unsigned_abs()))
-        .chain(repeat_n('v', down.unsigned_abs()))
-        .chain(repeat_n('<', left.unsigned_abs()))
+    let x_diff = diff.x.unsigned_abs();
+    let y_diff = diff.y.unsigned_abs();
+
+    let x_first = repeat_n(x_char, x_diff)
+        .chain(repeat_n(y_char, y_diff))
+        .chain(repeat_n('A', 1))
+        .collect_vec();
+
+    let y_first = repeat_n(y_char, y_diff)
+        .chain(repeat_n(x_char, x_diff))
         .chain(repeat_n('A', 1))
         .collect_vec();
 
     robots[index] = to;
     if index + 1 == ROBOT_COUNT {
-        return path;
+        if x_first.len() < y_first.len() {
+            return x_first;
+        } else {
+            return y_first;
+        }
     }
 
-    path.into_iter()
-        .flat_map(|c| move_pad(robots, index + 1, c))
-        .collect_vec()
+    let x_first = x_first
+        .into_iter()
+        .flat_map(|c| move_pad(&mut robots.clone(), index + 1, c))
+        .collect_vec();
+
+    let y_first = y_first
+        .into_iter()
+        .flat_map(|c| move_pad(&mut robots.clone(), index + 1, c))
+        .collect_vec();
+
+    if x_first.len() < y_first.len() {
+        return x_first;
+    } else {
+        return y_first;
+    }
 }
 
 fn solve_number(number: &str) -> usize {
