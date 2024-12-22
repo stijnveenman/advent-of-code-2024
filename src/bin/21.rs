@@ -98,19 +98,48 @@ fn map_number(input: &str, moveset: &Moveset) -> Vec<String> {
         .collect_vec()
 }
 
+fn solve_number(
+    input: &str,
+    depth: usize,
+    numpad_moves: &Moveset,
+    dirpad_moves: &Moveset,
+) -> usize {
+    let mut current = vec![input.to_string()];
+    for i in 0..depth {
+        let moveset = if i == 0 { numpad_moves } else { dirpad_moves };
+
+        current = current
+            .into_iter()
+            .flat_map(|n| map_number(&n, moveset))
+            .collect_vec();
+
+        if i != depth - 1 {
+            let ideal_len = current.iter().map(|n| n.len()).min().unwrap();
+            current = current
+                .into_iter()
+                .filter(|n| n.len() == ideal_len)
+                .collect_vec();
+        }
+    }
+
+    let ideal_len = current.iter().map(|n| n.len()).min().unwrap();
+    let num_part = input[..input.len() - 1].parse::<usize>().unwrap();
+
+    ideal_len * num_part
+}
+
 pub fn part_one(input: &str) -> Option<usize> {
     let numbers = input.lines().collect_vec();
 
     let numpad = calculate_paths(NUMPAD);
     let dirpad = calculate_paths(DIRPAD);
 
-    numbers
-        .iter()
-        .map(|n| map_number(n, &numpad))
-        .dbg()
-        .collect_vec();
+    let result = numbers
+        .into_iter()
+        .map(|n| solve_number(n, 3, &numpad, &dirpad))
+        .sum();
 
-    None
+    Some(result)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
