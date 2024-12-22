@@ -1,9 +1,10 @@
 use core::panic;
-use std::collections::HashMap;
+use std::{collections::HashMap, iter::repeat_n};
 
 use advent_of_code::{
     components::Point,
     grid::{char_grid::CharGrid, Grid},
+    AocItertools,
 };
 use itertools::Itertools;
 
@@ -16,6 +17,8 @@ X0A";
 
 static DIRPAD: &str = "X^A
 <v>";
+
+type Moveset = HashMap<(char, char), Vec<String>>;
 
 fn map_path(path: &[Point]) -> String {
     path.iter()
@@ -31,10 +34,11 @@ fn map_path(path: &[Point]) -> String {
                 a => panic!("unhandled: {}", a),
             }
         })
+        .chain(repeat_n('A', 1))
         .join("")
 }
 
-fn calculate_paths(grid: &str) -> HashMap<(char, char), Vec<String>> {
+fn calculate_paths(grid: &str) -> Moveset {
     let grid = CharGrid::new(grid);
     let mut map = HashMap::new();
 
@@ -45,10 +49,9 @@ fn calculate_paths(grid: &str) -> HashMap<(char, char), Vec<String>> {
             }
 
             if from_char == to_char {
-                map.insert((from_char, to_char), vec!["".into()]);
+                map.insert((from_char, to_char), vec!["A".into()]);
                 continue;
             }
-            println!();
 
             let mut open = vec![vec![from_point]];
             while let Some(current) = open.pop() {
@@ -83,11 +86,29 @@ fn calculate_paths(grid: &str) -> HashMap<(char, char), Vec<String>> {
     map
 }
 
+fn map_number(input: &str, moveset: &Moveset) -> Vec<String> {
+    // We start at A
+
+    repeat_n('A', 1)
+        .chain(input.chars())
+        .zip(input.chars())
+        .map(|m| moveset.get(&m).unwrap())
+        .multi_cartesian_product()
+        .map(|i| i.iter().join(""))
+        .collect_vec()
+}
+
 pub fn part_one(input: &str) -> Option<usize> {
     let numbers = input.lines().collect_vec();
 
     let numpad = calculate_paths(NUMPAD);
     let dirpad = calculate_paths(DIRPAD);
+
+    numbers
+        .iter()
+        .map(|n| map_number(n, &numpad))
+        .dbg()
+        .collect_vec();
 
     None
 }
