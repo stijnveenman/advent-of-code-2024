@@ -1,13 +1,8 @@
-use core::panic;
-use std::fs::create_dir;
-
 use advent_of_code::{
-    algo::dijkstra::dijkstra,
     components::Point,
     grid::{hash_grid::HashGrid, Grid},
-    AocItertools,
 };
-use itertools::Itertools;
+use itertools::{repeat_n, Itertools};
 
 advent_of_code::solution!(21);
 
@@ -51,32 +46,21 @@ fn move_pad(pad: &Pad, from: char, to: char) -> Vec<char> {
         // i think sometimes we might need A here
         return vec!['A'];
     }
-    let mut current = pad.find_by_value(&from).unwrap();
+    let current = pad.find_by_value(&from).unwrap();
     let end = pad.find_by_value(&to).unwrap();
-    let mut path = vec![];
 
-    while current != end {
-        let distance = current.distance(&end);
+    let diff = end - current;
 
-        let dir = Point::DIRECTIONS_4
-            .into_iter()
-            .filter(|d| pad.contains(&(current + *d)))
-            .find(|d| {
-                let next = current + *d;
-                next.distance(&end) < distance
-            })
-            .unwrap();
+    let up = diff.y.min(0);
+    let down = diff.y.max(0);
+    let left = diff.x.min(0);
+    let right = diff.x.max(0);
 
-        current += dir;
-
-        path.push(match dir {
-            Point::UP => '^',
-            Point::DOWN => 'V',
-            Point::RIGHT => '>',
-            Point::LEFT => '<',
-            _ => panic!(),
-        });
-    }
+    let mut path = repeat_n('>', right.unsigned_abs())
+        .chain(repeat_n('^', up.unsigned_abs()))
+        .chain(repeat_n('V', down.unsigned_abs()))
+        .chain(repeat_n('<', left.unsigned_abs()))
+        .collect_vec();
 
     path.push('A');
     path
@@ -118,7 +102,7 @@ fn solve_number(number: &str) -> usize {
         .collect_vec();
 
     let a = path.iter().join("");
-    println!("{}: {}", number, a);
+    println!("{}: {} - {}", number, a, a.len());
 
     path.len()
 }
