@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 
-use advent_of_code::AocItertools;
 use itertools::Itertools;
 use rustc_hash::FxHashMap;
 
@@ -45,7 +44,7 @@ pub fn part_one(input: &str) -> Option<usize> {
     });
 
     let mut set = HashSet::new();
-    for entry in connections.keys() {
+    for entry in connections.keys().unique() {
         set.extend(find_set(entry, &connections));
     }
 
@@ -59,7 +58,7 @@ pub fn part_one(input: &str) -> Option<usize> {
 
 fn is_fully_connected(set: &[&str], connections: &FxHashMap<&str, Vec<&str>>) -> bool {
     set.iter().all(|from| {
-        let connections = connections.get(from).unwrap();
+        let connections = connections.get(*from).unwrap();
 
         set.iter().all(|s| s == from || connections.contains(s))
     })
@@ -68,16 +67,18 @@ fn is_fully_connected(set: &[&str], connections: &FxHashMap<&str, Vec<&str>>) ->
 fn find_largest_fully_connected_sets<'a>(
     entry: &'a str,
     connections: &FxHashMap<&'a str, Vec<&'a str>>,
+    min_length: usize,
 ) -> Option<Vec<&'a str>> {
-    let mut check_set = connections.get(entry).unwrap().clone();
-    check_set.push(entry);
+    let check_set = connections.get(entry).unwrap();
 
-    check_set
-        .into_iter()
-        .powerset()
-        .filter(|set| set.len() > 3)
-        .filter(|set| is_fully_connected(set, connections))
-        .find_by_max(|set| set.len())
+    (min_length..check_set.len() + 1).rev().find_map(|i| {
+        check_set
+            .clone()
+            .into_iter()
+            .chain([entry])
+            .combinations(i)
+            .find(|p| is_fully_connected(p, connections))
+    })
 }
 
 pub fn part_two(input: &str) -> Option<String> {
@@ -92,11 +93,17 @@ pub fn part_two(input: &str) -> Option<String> {
         connections.entry(right).or_default().push(left);
     });
 
-    let mut largest = connections
-        .keys()
-        .filter_map(|key| find_largest_fully_connected_sets(key, &connections))
-        .find_by_max(|f| f.len())
-        .unwrap();
+    let mut keys = connections.keys().unique();
+    let mut largest =
+        find_largest_fully_connected_sets(keys.next().unwrap(), &connections, 3).unwrap();
+
+    for key in keys {
+        if let Some(current) = find_largest_fully_connected_sets(key, &connections, largest.len()) {
+            if current.len() > largest.len() {
+                largest = current;
+            }
+        }
+    }
 
     largest.sort();
 
