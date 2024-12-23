@@ -1,3 +1,4 @@
+use cached::proc_macro::cached;
 use core::panic;
 use std::{collections::HashMap, iter::repeat_n, usize};
 
@@ -98,7 +99,12 @@ fn map_number(input: &str, moveset: &Moveset) -> Vec<String> {
         .collect_vec()
 }
 
-fn solve_length(input: &str, depth_remaining: usize, dirpad_moves: &Moveset) -> usize {
+#[cached(
+    ty = "HashMap<(String, usize), usize>",
+    create = "{HashMap::new()}",
+    convert = r#"{(input.clone(), depth_remaining)}"#
+)]
+fn solve_length(input: String, depth_remaining: usize, dirpad_moves: &Moveset) -> usize {
     let pairs = ['A'].into_iter().chain(input.chars()).zip(input.chars());
 
     if depth_remaining == 1 {
@@ -113,7 +119,7 @@ fn solve_length(input: &str, depth_remaining: usize, dirpad_moves: &Moveset) -> 
                 .get(&pair)
                 .unwrap()
                 .iter()
-                .map(|subseq| solve_length(subseq, depth_remaining - 1, dirpad_moves))
+                .map(|subseq| solve_length(subseq.clone(), depth_remaining - 1, dirpad_moves))
                 .min()
                 .unwrap()
         })
@@ -133,7 +139,7 @@ fn solve(input: &str, depth: usize) -> Option<usize> {
             map_number(number, &numpad)
                 .iter()
                 .map(|n| {
-                    let length = solve_length(n, depth, &dirpad);
+                    let length = solve_length(n.clone(), depth, &dirpad);
                     length * number_parsed
                 })
                 .min()
