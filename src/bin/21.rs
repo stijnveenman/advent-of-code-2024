@@ -1,13 +1,13 @@
 use cached::proc_macro::cached;
 use core::panic;
-use std::{collections::HashMap, iter::repeat_n, usize};
+use std::{collections::HashMap, iter::repeat_n};
 
 use advent_of_code::{
     components::Point,
     grid::{char_grid::CharGrid, Grid},
-    AocItertools,
 };
 use itertools::Itertools;
+use lazy_static::lazy_static;
 
 advent_of_code::solution!(21);
 
@@ -18,6 +18,11 @@ X0A";
 
 static DIRPAD: &str = "X^A
 <v>";
+
+lazy_static! {
+    static ref NUMPAD_PATHS: Moveset = calculate_paths(NUMPAD);
+    static ref DIRPAD_PATHS: Moveset = calculate_paths(DIRPAD);
+}
 
 type Moveset = HashMap<(char, char), Vec<String>>;
 
@@ -99,27 +104,23 @@ fn map_number(input: &str, moveset: &Moveset) -> Vec<String> {
         .collect_vec()
 }
 
-#[cached(
-    ty = "HashMap<(String, usize), usize>",
-    create = "{HashMap::new()}",
-    convert = r#"{(input.clone(), depth_remaining)}"#
-)]
-fn solve_length(input: String, depth_remaining: usize, dirpad_moves: &Moveset) -> usize {
+#[cached]
+fn solve_length(input: String, depth_remaining: usize) -> usize {
     let pairs = ['A'].into_iter().chain(input.chars()).zip(input.chars());
 
     if depth_remaining == 1 {
         return pairs
-            .map(|pair| dirpad_moves.get(&pair).unwrap().first().unwrap().len())
+            .map(|pair| DIRPAD_PATHS.get(&pair).unwrap().first().unwrap().len())
             .sum();
     }
 
     pairs
         .map(|pair| {
-            dirpad_moves
+            DIRPAD_PATHS
                 .get(&pair)
                 .unwrap()
                 .iter()
-                .map(|subseq| solve_length(subseq.clone(), depth_remaining - 1, dirpad_moves))
+                .map(|subseq| solve_length(subseq.clone(), depth_remaining - 1))
                 .min()
                 .unwrap()
         })
@@ -129,17 +130,14 @@ fn solve_length(input: String, depth_remaining: usize, dirpad_moves: &Moveset) -
 fn solve(input: &str, depth: usize) -> Option<usize> {
     let numbers = input.lines().collect_vec();
 
-    let numpad = calculate_paths(NUMPAD);
-    let dirpad = calculate_paths(DIRPAD);
-
     let result = numbers
         .into_iter()
         .map(|number| {
             let number_parsed = number[..number.len() - 1].parse::<usize>().unwrap();
-            map_number(number, &numpad)
+            map_number(number, &NUMPAD_PATHS)
                 .iter()
                 .map(|n| {
-                    let length = solve_length(n.clone(), depth, &dirpad);
+                    let length = solve_length(n.clone(), depth);
                     length * number_parsed
                 })
                 .min()
