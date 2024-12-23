@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+use advent_of_code::AocItertools;
 use itertools::Itertools;
 use rustc_hash::FxHashMap;
 
@@ -56,8 +57,50 @@ pub fn part_one(input: &str) -> Option<usize> {
     Some(result)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+fn is_fully_connected(set: &[&str], connections: &FxHashMap<&str, Vec<&str>>) -> bool {
+    set.iter().all(|from| {
+        let connections = connections.get(from).unwrap();
+
+        set.iter().all(|s| s == from || connections.contains(s))
+    })
+}
+
+fn find_largest_fully_connected_sets<'a>(
+    entry: &'a str,
+    connections: &FxHashMap<&'a str, Vec<&'a str>>,
+) -> Option<Vec<&'a str>> {
+    let mut check_set = connections.get(entry).unwrap().clone();
+    check_set.push(entry);
+
+    check_set
+        .into_iter()
+        .powerset()
+        .filter(|set| set.len() > 3)
+        .filter(|set| is_fully_connected(set, connections))
+        .find_by_max(|set| set.len())
+}
+
+pub fn part_two(input: &str) -> Option<String> {
+    let input = input
+        .lines()
+        .map(|l| l.split_once("-").unwrap())
+        .collect_vec();
+
+    let mut connections: FxHashMap<&str, Vec<&str>> = FxHashMap::default();
+    input.into_iter().for_each(|(left, right)| {
+        connections.entry(left).or_default().push(right);
+        connections.entry(right).or_default().push(left);
+    });
+
+    let mut largest = connections
+        .keys()
+        .filter_map(|key| find_largest_fully_connected_sets(key, &connections))
+        .find_by_max(|f| f.len())
+        .unwrap();
+
+    largest.sort();
+
+    Some(largest.iter().join(","))
 }
 
 #[cfg(test)]
@@ -73,6 +116,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some("co,de,ka,ta".into()));
     }
 }

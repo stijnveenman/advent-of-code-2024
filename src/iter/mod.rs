@@ -53,6 +53,25 @@ pub trait AocItertools: Iterator {
 
         map
     }
+
+    fn find_by_max<F: Fn(&Self::Item) -> usize>(self, map_fn: F) -> Option<Self::Item>
+    where
+        Self: Sized,
+    {
+        let mut current = None;
+        let mut max = usize::MIN;
+
+        for c in self {
+            let v = map_fn(&c);
+
+            if v > max {
+                max = v;
+                current = Some(c);
+            }
+        }
+
+        current
+    }
 }
 
 impl<T> AocItertools for T where T: Iterator + ?Sized {}
