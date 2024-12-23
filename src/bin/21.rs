@@ -1,5 +1,5 @@
 use core::panic;
-use std::{collections::HashMap, iter::repeat_n};
+use std::{collections::HashMap, iter::repeat_n, usize};
 
 use advent_of_code::{
     components::Point,
@@ -98,37 +98,29 @@ fn map_number(input: &str, moveset: &Moveset) -> Vec<String> {
         .collect_vec()
 }
 
-fn solve_number(
-    input: &str,
-    depth: usize,
-    numpad_moves: &Moveset,
-    dirpad_moves: &Moveset,
-) -> usize {
-    let mut current = vec![input.to_string()];
-    for i in 0..depth {
-        let moveset = if i == 0 { numpad_moves } else { dirpad_moves };
+fn solve_length(input: &str, depth_remaining: usize, dirpad_moves: &Moveset) -> usize {
+    let pairs = ['A'].into_iter().chain(input.chars()).zip(input.chars());
 
-        current = current
-            .into_iter()
-            .flat_map(|n| map_number(&n, moveset))
-            .collect_vec();
-
-        if i != depth - 1 {
-            let ideal_len = current.iter().map(|n| n.len()).min().unwrap();
-            current = current
-                .into_iter()
-                .filter(|n| n.len() == ideal_len)
-                .collect_vec();
-        }
+    if depth_remaining == 1 {
+        return pairs
+            .map(|pair| dirpad_moves.get(&pair).unwrap().first().unwrap().len())
+            .sum();
     }
 
-    let ideal_len = current.iter().map(|n| n.len()).min().unwrap();
-    let num_part = input[..input.len() - 1].parse::<usize>().unwrap();
-
-    ideal_len * num_part
+    pairs
+        .map(|pair| {
+            dirpad_moves
+                .get(&pair)
+                .unwrap()
+                .iter()
+                .map(|subseq| solve_length(subseq, depth_remaining - 1, dirpad_moves))
+                .min()
+                .unwrap()
+        })
+        .sum()
 }
 
-pub fn part_one(input: &str) -> Option<usize> {
+fn solve(input: &str, depth: usize) -> Option<usize> {
     let numbers = input.lines().collect_vec();
 
     let numpad = calculate_paths(NUMPAD);
@@ -136,14 +128,28 @@ pub fn part_one(input: &str) -> Option<usize> {
 
     let result = numbers
         .into_iter()
-        .map(|n| solve_number(n, 3, &numpad, &dirpad))
+        .map(|number| {
+            let number_parsed = number[..number.len() - 1].parse::<usize>().unwrap();
+            map_number(number, &numpad)
+                .iter()
+                .map(|n| {
+                    let length = solve_length(n, depth, &dirpad);
+                    length * number_parsed
+                })
+                .min()
+                .unwrap()
+        })
         .sum();
 
     Some(result)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    None
+pub fn part_one(input: &str) -> Option<usize> {
+    solve(input, 2)
+}
+
+pub fn part_two(input: &str) -> Option<usize> {
+    solve(input, 25)
 }
 
 #[cfg(test)]
