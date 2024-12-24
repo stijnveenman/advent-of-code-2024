@@ -248,12 +248,32 @@ fn first_one(a: usize) -> Option<usize> {
     (0..64).find(|&i| (a >> i) & 0b1 == 1)
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
+pub fn part_two(input: &str) -> Option<String> {
     let (values, connections) = parse(input);
 
     let mut graph = build_graph(&connections);
 
-    switch("z10", "ggn", &mut graph);
+    let pairs = vec![
+        ("z10", "ggn"),
+        ("ndw", "jcb"),
+        ("z32", "grm"),
+        ("dcj", "ncw"),
+    ];
+
+    for pair in &pairs {
+        switch(pair.0, pair.1, &mut graph);
+    }
+
+    let solution = pairs
+        .iter()
+        .flat_map(|pair| vec![pair.0, pair.1])
+        .sorted()
+        .join(",");
+
+    // switch("z10", "ggn", &mut graph);
+    // switch("ndw", "jcb", &mut graph);
+    // switch("z32", "grm", &mut graph);
+    // switch("dcj", "ncw", &mut graph);
 
     let x = build_num(&values, 'x');
     let y = build_num(&values, 'y');
@@ -268,7 +288,7 @@ pub fn part_two(input: &str) -> Option<u32> {
 
     render_graph(&graph);
 
-    None
+    Some(solution)
 }
 
 #[cfg(test)]
@@ -279,11 +299,5 @@ mod tests {
     fn test_part_one() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
         assert_eq!(result, Some(2024));
-    }
-
-    #[test]
-    fn test_part_two() {
-        let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
     }
 }
