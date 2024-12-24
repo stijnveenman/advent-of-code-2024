@@ -150,7 +150,6 @@ fn connected_nodes<'a>(node: &str, graph: &Graph<'a>, set: &mut HashSet<&'a str>
     if set.contains(node) {
         return;
     }
-    dbg!(node);
     set.insert(graph.get_key_value(node).unwrap().0);
 
     while let Some(current) = open.pop() {
@@ -171,6 +170,7 @@ fn connected_nodes<'a>(node: &str, graph: &Graph<'a>, set: &mut HashSet<&'a str>
     }
 }
 
+#[allow(dead_code)]
 fn wrong_connected_nodes<'a>(graph: &Graph<'a>, diff: usize) -> HashSet<&'a str> {
     let mut set = HashSet::new();
 
@@ -189,16 +189,34 @@ fn wrong_connected_nodes<'a>(graph: &Graph<'a>, diff: usize) -> HashSet<&'a str>
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
-    let (values, connections) = parse(input);
+    let (_values, connections) = parse(input);
 
-    let mut graph = build_graph(&connections);
+    let graph = build_graph(&connections);
 
-    let result = solve_graph(&mut graph, &values);
-    let x = build_num(&values, 'x');
-    let y = build_num(&values, 'y');
+    // let result = solve_graph(&mut graph, &values);
+    // let x = build_num(&values, 'x');
+    // let y = build_num(&values, 'y');
 
-    let options = wrong_connected_nodes(&graph, result ^ (x + y));
-    dbg!(options.iter().combinations(2).combinations(4).count());
+    let mut prev = 7;
+    let mut prev_set = HashSet::new();
+    connected_nodes("z02", &graph, &mut prev_set);
+    for i in 2..16 {
+        let mut set = HashSet::new();
+        let node = format!("z{:0>2}", i);
+        connected_nodes(node.as_str(), &graph, &mut set);
+
+        dbg!(set.len());
+
+        dbg!(set.difference(&prev_set).sorted().collect_vec());
+
+        if set.len() - prev != 6 {
+            println!("failed at {}", i);
+            break;
+        }
+
+        prev = set.len();
+        prev_set = set;
+    }
 
     None
 }
