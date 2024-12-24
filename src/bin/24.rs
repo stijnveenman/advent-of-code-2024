@@ -1,4 +1,5 @@
 use core::panic;
+use std::collections::HashSet;
 
 use itertools::Itertools;
 use rustc_hash::FxHashMap;
@@ -130,7 +131,81 @@ pub fn part_one(input: &str) -> Option<usize> {
     Some(result)
 }
 
+fn build_num(values: &Values, start: char) -> usize {
+    let mut result = 0;
+    for i in 0..64 {
+        let num = format!("{}{:0>2}", start, i);
+
+        let Some(value) = values.get(num.as_str()) else {
+            break;
+        };
+
+        result |= value << i;
+    }
+    result
+}
+
+fn connected_nodes<'a>(node: &str, graph: &Graph<'a>, set: &mut HashSet<&'a str>) {
+    let mut open = vec![node];
+    if set.contains(node) {
+        return;
+    }
+    dbg!(node);
+    set.insert(graph.get_key_value(node).unwrap().0);
+
+    while let Some(current) = open.pop() {
+        if current.starts_with('x') || current.starts_with('y') {
+            continue;
+        }
+        let node = graph.get(current).unwrap();
+
+        if !set.contains(node.left) {
+            set.insert(node.left);
+            open.push(node.left);
+        }
+
+        if !set.contains(node.right) {
+            set.insert(node.right);
+            open.push(node.right);
+        }
+    }
+}
+
+fn wrong_connected_nodes<'a>(graph: &Graph<'a>, diff: usize) -> HashSet<&'a str> {
+    let mut set = HashSet::new();
+
+    let len = format!("{diff:b}").len();
+
+    for i in 0..len {
+        if ((diff >> i) & 0b1) == 0 {
+            continue;
+        }
+
+        let node = format!("z{i:0>2}");
+        connected_nodes(node.as_str(), graph, &mut set);
+    }
+
+    set
+}
+
 pub fn part_two(input: &str) -> Option<u32> {
+    let (values, connections) = parse(input);
+
+    let mut graph = build_graph(&connections);
+
+    let result = solve_graph(&mut graph, &values);
+    let x = build_num(&values, 'x');
+    let y = build_num(&values, 'y');
+
+    println!("{x:b}");
+    println!("{y:b}");
+    println!("{result:b}");
+    println!("{:b}", x + y);
+    println!("{:0>46b}", result ^ (x + y));
+
+    let options = wrong_connected_nodes(&graph, result ^ (x + y));
+    dbg!(options.len(), graph.keys().len());
+
     None
 }
 
