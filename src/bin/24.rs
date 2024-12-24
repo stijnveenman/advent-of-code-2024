@@ -3,10 +3,11 @@ use std::{
     collections::{HashMap, HashSet},
     fs::File,
     io::Write,
+    process::{Command, Stdio},
 };
 
 use itertools::Itertools;
-use petgraph::{data::Build, dot::Dot, Graph};
+use petgraph::{dot::Dot, Graph};
 use rustc_hash::FxHashMap;
 
 advent_of_code::solution!(24);
@@ -193,6 +194,7 @@ fn wrong_connected_nodes<'a>(graph: &MyGraph<'a>, diff: usize) -> HashSet<&'a st
     set
 }
 
+// MARKER i want my own graph tooling
 fn render_graph(graph: &MyGraph) {
     let mut deps = Graph::<&str, &str>::new();
 
@@ -213,10 +215,25 @@ fn render_graph(graph: &MyGraph) {
         deps.add_edge(from_index, right_index, node.gate);
     }
 
-    let dot = Dot::with_config(&deps, &[]);
+    let dot_string = Dot::with_config(&deps, &[]);
 
-    let mut file = File::create("graph2.dot").unwrap();
-    file.write_all(dot.to_string().as_bytes()).unwrap();
+    let mut dot = Command::new("dot")
+        .args(["-Tsvg"])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .unwrap();
+
+    dot.stdin
+        .take()
+        .unwrap()
+        .write_all(dot_string.to_string().as_bytes())
+        .unwrap();
+
+    let dot_output = dot.wait_with_output().unwrap();
+
+    let mut file = File::create("output2.svg").unwrap();
+    file.write_all(&dot_output.stdout).unwrap();
 }
 
 fn switch<'a>(a: &'a str, b: &'a str, graph: &mut MyGraph<'a>) {
