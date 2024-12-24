@@ -197,14 +197,8 @@ pub fn part_two(input: &str) -> Option<u32> {
     let x = build_num(&values, 'x');
     let y = build_num(&values, 'y');
 
-    println!("{x:b}");
-    println!("{y:b}");
-    println!("{result:b}");
-    println!("{:b}", x + y);
-    println!("{:0>46b}", result ^ (x + y));
-
     let options = wrong_connected_nodes(&graph, result ^ (x + y));
-    dbg!(options.len(), graph.keys().len());
+    dbg!(options.iter().combinations(2).combinations(4).count());
 
     None
 }
