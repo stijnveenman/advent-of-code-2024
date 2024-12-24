@@ -1,14 +1,19 @@
 use core::panic;
-use std::collections::HashSet;
+use std::{
+    collections::{HashMap, HashSet},
+    fs::File,
+    io::Write,
+};
 
 use itertools::Itertools;
+use petgraph::{data::Build, dot::Dot, Graph};
 use rustc_hash::FxHashMap;
 
 advent_of_code::solution!(24);
 
 type Values<'a> = FxHashMap<&'a str, usize>;
 type Connections<'a> = Vec<(&'a str, &'a str, &'a str, &'a str)>;
-type Graph<'a> = FxHashMap<&'a str, Node<'a>>;
+type MyGraph<'a> = FxHashMap<&'a str, Node<'a>>;
 
 fn parse(input: &str) -> (Values, Connections) {
     let (values, connections) = input.split_once("\n\n").unwrap();
@@ -46,7 +51,7 @@ struct Node<'a> {
     result: Option<usize>,
 }
 
-fn build_graph<'a>(connections: &'a Connections) -> Graph<'a> {
+fn build_graph<'a>(connections: &'a Connections) -> MyGraph<'a> {
     let mut graph: FxHashMap<&str, Node> = FxHashMap::default();
 
     for c in connections {
@@ -64,7 +69,7 @@ fn build_graph<'a>(connections: &'a Connections) -> Graph<'a> {
     graph
 }
 
-fn solve_node<'a>(node: &str, graph: &mut Graph<'a>, values: &'a Values) -> usize {
+fn solve_node<'a>(node: &str, graph: &mut MyGraph<'a>, values: &'a Values) -> usize {
     if node.starts_with("x") || node.starts_with("y") {
         return *values.get(node).unwrap();
     }
@@ -107,7 +112,7 @@ fn solve_node<'a>(node: &str, graph: &mut Graph<'a>, values: &'a Values) -> usiz
     result
 }
 
-fn solve_graph<'a>(graph: &mut Graph<'a>, values: &'a Values) -> usize {
+fn solve_graph<'a>(graph: &mut MyGraph<'a>, values: &'a Values) -> usize {
     let mut result = 0;
     for i in 0..64 {
         let node = format!("z{:0>2}", i);
@@ -145,7 +150,7 @@ fn build_num(values: &Values, start: char) -> usize {
     result
 }
 
-fn connected_nodes<'a>(node: &str, graph: &Graph<'a>, set: &mut HashSet<&'a str>) {
+fn connected_nodes<'a>(node: &str, graph: &MyGraph<'a>, set: &mut HashSet<&'a str>) {
     let mut open = vec![node];
     if set.contains(node) {
         return;
@@ -171,7 +176,7 @@ fn connected_nodes<'a>(node: &str, graph: &Graph<'a>, set: &mut HashSet<&'a str>
 }
 
 #[allow(dead_code)]
-fn wrong_connected_nodes<'a>(graph: &Graph<'a>, diff: usize) -> HashSet<&'a str> {
+fn wrong_connected_nodes<'a>(graph: &MyGraph<'a>, diff: usize) -> HashSet<&'a str> {
     let mut set = HashSet::new();
 
     let len = format!("{diff:b}").len();
@@ -188,35 +193,63 @@ fn wrong_connected_nodes<'a>(graph: &Graph<'a>, diff: usize) -> HashSet<&'a str>
     set
 }
 
-pub fn part_two(input: &str) -> Option<u32> {
-    let (_values, connections) = parse(input);
+fn render_graph(graph: &MyGraph) {
+    let mut deps = Graph::<&str, &str>::new();
 
-    let graph = build_graph(&connections);
+    let mut indexes = HashMap::new();
 
-    // let result = solve_graph(&mut graph, &values);
-    // let x = build_num(&values, 'x');
-    // let y = build_num(&values, 'y');
+    for (from, node) in graph.iter() {
+        let from_index = *indexes.entry(from).or_insert_with(|| deps.add_node(from));
 
-    let mut prev = 7;
-    let mut prev_set = HashSet::new();
-    connected_nodes("z02", &graph, &mut prev_set);
-    for i in 2..16 {
-        let mut set = HashSet::new();
-        let node = format!("z{:0>2}", i);
-        connected_nodes(node.as_str(), &graph, &mut set);
+        let left_index = *indexes
+            .entry(&node.left)
+            .or_insert_with(|| deps.add_node(node.left));
 
-        dbg!(set.len());
+        let right_index = *indexes
+            .entry(&node.right)
+            .or_insert_with(|| deps.add_node(node.right));
 
-        dbg!(set.difference(&prev_set).sorted().collect_vec());
-
-        if set.len() - prev != 6 {
-            println!("failed at {}", i);
-            break;
-        }
-
-        prev = set.len();
-        prev_set = set;
+        deps.add_edge(from_index, left_index, node.gate);
+        deps.add_edge(from_index, right_index, node.gate);
     }
+
+    let dot = Dot::with_config(&deps, &[]);
+
+    let mut file = File::create("graph2.dot").unwrap();
+    file.write_all(dot.to_string().as_bytes()).unwrap();
+}
+
+fn switch<'a>(a: &'a str, b: &'a str, graph: &mut MyGraph<'a>) {
+    let a_node = graph.remove(a).unwrap();
+    let b_node = graph.remove(b).unwrap();
+
+    graph.insert(a, b_node);
+    graph.insert(b, a_node);
+}
+
+fn first_one(a: usize) -> Option<usize> {
+    (0..64).find(|&i| (a >> i) & 0b1 == 1)
+}
+
+pub fn part_two(input: &str) -> Option<u32> {
+    let (values, connections) = parse(input);
+
+    let mut graph = build_graph(&connections);
+
+    switch("z10", "ggn", &mut graph);
+
+    let x = build_num(&values, 'x');
+    let y = build_num(&values, 'y');
+
+    let result = solve_graph(&mut graph, &values);
+
+    println!("{:064b}", x + y);
+    println!("{:064b}", result);
+    println!("{:064b}", result ^ (x + y));
+
+    println!("first mismatch: {:?}", first_one(result ^ (x + y)));
+
+    render_graph(&graph);
 
     None
 }
