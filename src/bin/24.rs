@@ -257,7 +257,7 @@ pub fn part_two(input: &str) -> Option<String> {
         ("z10", "ggn"),
         ("ndw", "jcb"),
         ("z32", "grm"),
-        ("dcj", "ncw"),
+        ("twr", "z39"),
     ];
 
     for pair in &pairs {
