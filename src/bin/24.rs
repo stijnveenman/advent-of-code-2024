@@ -63,7 +63,7 @@ fn build_graph<'a>(connections: &'a Connections) -> Graph<'a> {
     graph
 }
 
-fn solve_node<'a>(node: &'a str, graph: &mut Graph<'a>, values: &'a Values) -> usize {
+fn solve_node<'a>(node: &str, graph: &mut Graph<'a>, values: &'a Values) -> usize {
     if node.starts_with("x") || node.starts_with("y") {
         return *values.get(node).unwrap();
     }
@@ -106,15 +106,28 @@ fn solve_node<'a>(node: &'a str, graph: &mut Graph<'a>, values: &'a Values) -> u
     result
 }
 
-pub fn part_one(input: &str) -> Option<u32> {
+fn solve_graph<'a>(graph: &mut Graph<'a>, values: &'a Values) -> usize {
+    let mut result = 0;
+    for i in 0..64 {
+        let node = format!("z{:0>2}", i);
+        if !graph.contains_key(node.as_str()) {
+            break;
+        }
+
+        let node_result = solve_node(&node, graph, values);
+
+        result |= node_result << i;
+    }
+    result
+}
+
+pub fn part_one(input: &str) -> Option<usize> {
     let (values, connections) = parse(input);
 
     let mut graph = build_graph(&connections);
 
-    let result = solve_node("z07", &mut graph, &values);
-    dbg!(result);
-
-    None
+    let result = solve_graph(&mut graph, &values);
+    Some(result)
 }
 
 pub fn part_two(input: &str) -> Option<u32> {
